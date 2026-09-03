@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import { CoreConfig } from '../core/config/core.config';
 import { globalPrefixSetup } from './global-prefix.setup';
 import { pipesSetup } from './pipes.setup';
 import { swaggerSetup } from './swagger.setup';
@@ -9,6 +10,8 @@ export function appSetup(app: INestApplication): void {
   pipesSetup(app);
   /*Устанавливаем глобальный префикс ко всем маршрутам приложения.*/
   globalPrefixSetup(app);
+  /*Получаем экземпляр класса "CoreConfig".*/
+  const coreConfig: CoreConfig = app.get<CoreConfig>(CoreConfig);
   /*Генерируем Swagger-документацию.*/
-  swaggerSetup(app);
+  if (coreConfig.IS_SWAGGER_ENABLED) swaggerSetup(app);
 }

@@ -1,5 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
+import { CoreConfig } from '../core/config/core.config';
 import { SETTINGS } from '../core/settings/settings';
 import { SwaggerSortEnums } from '../core/swagger/types/swagger-sort-enums';
 
@@ -21,8 +22,11 @@ interface SwaggerMethod {
 
 /*Функция для генерации Swagger-документации.*/
 export function swaggerSetup(app: INestApplication): void {
+  /*Получаем экземпляр класса "CoreConfig".*/
+  const coreConfig: CoreConfig = app.get<CoreConfig>(CoreConfig);
+
   const config: Omit<OpenAPIObject, 'paths'> = new DocumentBuilder()
-    .setTitle(SETTINGS.APP_NAME_FOR_SWAGGER)
+    .setTitle(coreConfig.APP_NAME_FOR_SWAGGER)
     .addBearerAuth()
     .addBasicAuth()
     .setVersion('0.1')
@@ -31,7 +35,7 @@ export function swaggerSetup(app: INestApplication): void {
   const document: OpenAPIObject = SwaggerModule.createDocument(app, config, { extraModels: [SwaggerSortEnums] });
 
   SwaggerModule.setup(SETTINGS.GLOBAL_PREFIX, app, document, {
-    customSiteTitle: SETTINGS.APP_NAME_FOR_SWAGGER,
+    customSiteTitle: coreConfig.APP_NAME_FOR_SWAGGER,
 
     /*В 12-й версии @nestjs/swagger был баг, когда значки блокнотов изначально были видны. Этот CSS-код их скрывает.*/
     customCss: `

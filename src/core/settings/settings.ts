@@ -1,22 +1,6 @@
-import 'dotenv/config';
 import { SortDirectionInputDTO } from '../pagination/input-dto/sort-direction.input-dto';
 
 export const SETTINGS = {
-  PORT: Number(process.env.PORT || 5003),
-
-  MONGO_URL: 'mongodb://localhost:27017/?maxPoolSize=50',
-  DB_NAME: process.env.DB_NAME || '030-s-04-w-04-bloggers-app-hw',
-  TEST_DB_NAME: process.env.DB_NAME || '030-s-04-w-04-bloggers-app-hw-test',
-
-  APP_NAME_FOR_SWAGGER: 'Bloggers App Swagger API',
-
-  BASIC_AUTH_ADMIN_LOGIN: String(process.env.BASIC_AUTH_ADMIN_LOGIN),
-  BASIC_AUTH_ADMIN_PASSWORD: String(process.env.BASIC_AUTH_ADMIN_PASSWORD),
-  AT_SECRET: String(process.env.AT_SECRET),
-  AT_TIME: process.env.AT_TIME,
-  RT_SECRET: String(process.env.RT_SECRET),
-  RT_TIME: process.env.RT_TIME,
-
   GLOBAL_PREFIX: 'api',
 
   AUTH_PREFIX: 'auth',
@@ -64,21 +48,4 @@ export const SETTINGS = {
   DEFAULT_PAGINATION_PAGE_NUMBER: 1,
   DEFAULT_PAGINATION_PAGE_SIZE: 10,
   DEFAULT_PAGINATION_SORT_DIRECTION: SortDirectionInputDTO.Desc,
-
-  APP_NAME_FOR_NOTIFICATION_MODULE: '"Bloggers App"',
-  EMAIL: process.env.EMAIL,
-  EMAIL_PASS: process.env.EMAIL_PASS,
-  EMAIL_APP_PASS: process.env.EMAIL_APP_PASS,
-
-  CONFIRMATION_REGISTRATION_CODE_EXPIRATION_TIME: {
-    minutes: Number(process.env.CONFIRMATION_REGISTRATION_CODE_EXPIRATION_TIME),
-  },
-  CONFIRMATION_REGISTRATION_CODE_EXPIRATION_TIME_IN_DB_IN_SECONDS: Number(
-    process.env.CONFIRMATION_REGISTRATION_CODE_EXPIRATION_TIME_IN_DB_IN_SECONDS
-  ),
-
-  PASSWORD_RECOVERY_CODE_EXPIRATION_TIME: { minutes: Number(process.env.PASSWORD_RECOVERY_CODE_EXPIRATION_TIME) },
-  PASSWORD_RECOVERY_CODE_EXPIRATION_TIME_IN_DB_IN_SECONDS: Number(
-    process.env.PASSWORD_RECOVERY_CODE_EXPIRATION_TIME_IN_DB_IN_SECONDS
-  ),
 };

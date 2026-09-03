@@ -1,5 +1,4 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { SETTINGS } from '../../../../core/settings/settings';
 import { USER_VALIDATION_CONSTRAINTS } from '../../../../core/validation/constraints/user.validation-constraints';
 import { EmailConfirmationDocumentType } from './document-types/email-confirmation.document-type';
 import { CreateEmailConfirmationDomainDTO } from './domain-dto/create-email-confirmation.domain-dto';
@@ -26,11 +25,7 @@ export class EmailConfirmation {
   })
   public confirmationCode: string;
 
-  @Prop({
-    type: Date,
-    required: true,
-    expires: SETTINGS.CONFIRMATION_REGISTRATION_CODE_EXPIRATION_TIME_IN_DB_IN_SECONDS,
-  })
+  @Prop({ type: Date, required: true })
   public expirationDate: Date;
 
   public createdAt: Date;

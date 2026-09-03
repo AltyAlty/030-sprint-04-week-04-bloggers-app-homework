@@ -2,15 +2,16 @@ import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { IS_PUBLIC_KEY } from '../../../modules/user/api/auth/decorators/guard/public.guard-decorator';
+import { AuthConfig } from '../../../modules/user/config/auth.config';
 import { DomainException, DomainExceptionCode } from '../../exceptions/domain/domain.exception';
-import { SETTINGS } from '../../settings/settings';
 
 /*Гард для basic авторизации.*/
 @Injectable()
 export class BasicAuthGuard implements CanActivate {
-  private readonly login: string = SETTINGS.BASIC_AUTH_ADMIN_LOGIN;
-  private readonly password: string = SETTINGS.BASIC_AUTH_ADMIN_PASSWORD;
-  public constructor(private readonly reflector: Reflector) {}
+  public constructor(
+    private readonly authConfig: AuthConfig,
+    private readonly reflector: Reflector
+  ) {}
 
   /*Реализуем метод "canActivate()" как этого требует интерфейс "CanActivate()".*/
   public canActivate(context: ExecutionContext): boolean {
@@ -58,7 +59,7 @@ export class BasicAuthGuard implements CanActivate {
     const password: string = credentials.substring(separatorIndex + 1);
 
     /*Если логин или пароль не совпадают с заранее заданными значениями, то сообщаем об отказе в авторизации клиенту.*/
-    if (username !== this.login || password !== this.password)
+    if (username !== this.authConfig.BASIC_AUTH_LOGIN || password !== this.authConfig.BASIC_AUTH_PASSWORD)
       throw new DomainException({
         code: DomainExceptionCode.InvalidBasicAuthCredentials,
         message: 'Invalid basic authorization credentials',

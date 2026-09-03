@@ -9,7 +9,7 @@ import { AuthRepository } from '../../infrastructure/auth/auth.repository';
 import { DomainException, DomainExceptionCode } from '../../../../core/exceptions/domain/domain.exception';
 import { UserLocalAuthContextDTO } from '../../../../core/guards/local-auth/dto/user-local-auth-context.dto';
 import { EmailManager } from '../../../../core/modules/notification/email-manager/email.manager';
-import { SETTINGS } from '../../../../core/settings/settings';
+import { AuthConfig } from '../../config/auth.config';
 import { EmailConfirmationDocumentType } from '../../domain/auth/document-types/email-confirmation.document-type';
 import { PasswordRecoveryCodeDataDocumentType } from '../../domain/auth/document-types/password-recovery-code-data.document-type';
 import { EmailConfirmation } from '../../domain/auth/email-confirmation.entity';
@@ -32,6 +32,7 @@ export class AuthService {
     private readonly emailConfirmationModel: EmailConfirmationModelType,
     @InjectModel(PasswordRecoveryCodeData.name)
     private readonly passwordRecoveryCodeDataModel: PasswordRecoveryCodeDataModelType,
+    private readonly authConfig: AuthConfig,
     private readonly jwtService: JwtService,
     private readonly argon2Adapter: Argon2Adapter,
     private readonly emailManager: EmailManager,
@@ -43,8 +44,12 @@ export class AuthService {
   public async registerUser(dto: RegisterUserDTO): Promise<void> {
     /*Генерируем код подтверждения регистрации пользователя.*/
     const confirmationCode: string = randomUUID();
+
     /*Генерируем дату истечения кода подтверждения регистрации пользователя.*/
-    const expirationDate: Date = add(new Date(), SETTINGS.CONFIRMATION_REGISTRATION_CODE_EXPIRATION_TIME);
+    const expirationDate: Date = add(new Date(), {
+      minutes: this.authConfig.CONFIRMATION_REGISTRATION_CODE_EXPIRATION_TIME_IN_MINUTES,
+    });
+
     /*Просим сервис "UsersService" создать пользователя.*/
     const userId: string = await this.usersService.create(dto);
 
@@ -99,8 +104,12 @@ export class AuthService {
     /*Если регистрация пользователя еще не была подтверждена, то генерируем код подтверждения регистрации
     пользователя.*/
     const confirmationCode: string = randomUUID();
+
     /*Генерируем дату истечения кода подтверждения регистрации пользователя.*/
-    const expirationDate: Date = add(new Date(), SETTINGS.CONFIRMATION_REGISTRATION_CODE_EXPIRATION_TIME);
+    const expirationDate: Date = add(new Date(), {
+      minutes: this.authConfig.CONFIRMATION_REGISTRATION_CODE_EXPIRATION_TIME_IN_MINUTES,
+    });
+
     /*Получаем ID пользователя.*/
     const userId: string = user.id;
 
@@ -137,8 +146,11 @@ export class AuthService {
     const userId: string = user.id;
     /*Генерируем код восстановления пароля пользователя.*/
     const passwordRecoveryCode: string = randomUUID();
+
     /*Генерируем дату истечения кода восстановления пароля пользователя.*/
-    const expirationDate: Date = add(new Date(), SETTINGS.PASSWORD_RECOVERY_CODE_EXPIRATION_TIME);
+    const expirationDate: Date = add(new Date(), {
+      minutes: this.authConfig.PASSWORD_RECOVERY_CODE_EXPIRATION_TIME_IN_MINUTES,
+    });
 
     /*Просим репозиторий "AuthRepository" найти данные о коде восстановления пароля пользователя по ID пользователя в
     БД.*/
@@ -188,13 +200,19 @@ export class AuthService {
     /*Просим сервис "JwtService" создать AT.*/
     const accessToken: string = await this.jwtService.signAsync(
       { userId: userLocalAuthContext.id },
-      { secret: SETTINGS.AT_SECRET, expiresIn: SETTINGS.AT_TIME as JwtSignOptions['expiresIn'] }
+      {
+        secret: this.authConfig.AT_SECRET,
+        expiresIn: this.authConfig.AT_TIME_IN_SECONDS as JwtSignOptions['expiresIn'],
+      }
     );
 
     /*Просим сервис "JwtService" создать RT.*/
     const refreshToken: string = await this.jwtService.signAsync(
       { userId: userLocalAuthContext.id },
-      { secret: SETTINGS.RT_SECRET, expiresIn: SETTINGS.RT_TIME as JwtSignOptions['expiresIn'] }
+      {
+        secret: this.authConfig.RT_SECRET,
+        expiresIn: this.authConfig.RT_TIME_IN_SECONDS as JwtSignOptions['expiresIn'],
+      }
     );
 
     /*Возвращаем AT.*/

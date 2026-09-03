@@ -1,5 +1,4 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { SETTINGS } from '../../../../core/settings/settings';
 import { USER_VALIDATION_CONSTRAINTS } from '../../../../core/validation/constraints/user.validation-constraints';
 import { PasswordRecoveryCodeDataDocumentType } from './document-types/password-recovery-code-data.document-type';
 import { CreatePasswordRecoveryCodeDataDomainDTO } from './domain-dto/create-password-recovery-code-data.domain-dto';
@@ -26,7 +25,7 @@ export class PasswordRecoveryCodeData {
   })
   public passwordRecoveryCode: string;
 
-  @Prop({ type: Date, required: true, expires: SETTINGS.PASSWORD_RECOVERY_CODE_EXPIRATION_TIME_IN_DB_IN_SECONDS })
+  @Prop({ type: Date, required: true })
   public expirationDate: Date;
 
   public createdAt: Date;
