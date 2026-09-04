@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { APP_FILTER } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { configModule } from './config.module';
@@ -24,6 +25,13 @@ import { TestingModule } from './testing/testing.module';
         uri: coreConfig.MONGO_URI,
         dbName: coreConfig.DB_NAME,
       }),
+    }),
+    ThrottlerModule.forRootAsync({
+      imports: [CoreModule],
+      inject: [CoreConfig],
+      useFactory: (coreConfig: CoreConfig) => [
+        { ttl: coreConfig.REQUEST_RATE_LIMIT_TTL * 1000, limit: coreConfig.REQUEST_RATE_LIMIT },
+      ],
     }),
     BlogModule,
     UserModule,

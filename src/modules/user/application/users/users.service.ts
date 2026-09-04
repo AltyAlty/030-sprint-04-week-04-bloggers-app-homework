@@ -225,7 +225,7 @@ export class UsersService {
   }
 
   /*Метод для soft удаления пользователя по ID.*/
-  public async markAsDeleted(id: string): Promise<void> {
+  public async markAsDeletedById(id: string): Promise<void> {
     /*Просим сервис "UsersService" найти пользователя по ID без выброса исключений.*/
     const user: UserDocumentType | null = await this.findByIdWithoutExceptions(id);
 
@@ -244,7 +244,7 @@ export class UsersService {
   }
 
   /*Метод для hard удаления пользователя по ID.*/
-  public async delete(id: string): Promise<void> {
+  public async deleteById(id: string): Promise<void> {
     /*Просим сервис "UsersService" найти пользователя по ID без выброса исключений.*/
     const user: UserDocumentType | null = await this.findByIdWithoutExceptions(id);
 

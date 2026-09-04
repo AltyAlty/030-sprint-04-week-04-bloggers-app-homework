@@ -40,17 +40,17 @@ import { CommentOutputDTO } from '../comments/output-dto/comment.output-dto';
 import { CommentListOutputDTO } from '../comments/output-dto/comment-list.output-dto';
 import { PostOutputDTO } from './output-dto/post.output-dto';
 import { PostListOutputDTO } from './output-dto/post-list.output-dto';
+import { AccessJwtAuthGuard } from '../../../../core/guards/access-jwt-auth/access-jwt-auth.guard';
+import { UserAccessJwtAuthContextDTO } from '../../../../core/guards/access-jwt-auth/dto/user-access-jwt-auth-context.dto';
 import { BasicAuthGuard } from '../../../../core/guards/basic-auth/basic-auth.guard';
-import { UserJwtAuthContextDTO } from '../../../../core/guards/jwt-auth/dto/user-jwt-auth-context.dto';
-import { JwtAuthGuard } from '../../../../core/guards/jwt-auth/jwt-auth.guard';
-import { OptionalJwtAuthGuard } from '../../../../core/guards/optional-jwt-auth/optional-jwt-auth.guard';
+import { OptionalAccessJwtAuthGuard } from '../../../../core/guards/optional-access-jwt-auth/optional-access-jwt-auth.guard';
 import { SETTINGS } from '../../../../core/settings/settings';
 import { ExtractUserDataFromRequest } from '../../../user/api/auth/decorators/param-extraction/extract-user-data-from-request.param-decorator';
 import { PaginatedCommentListSwaggerOutputDTO } from '../comments/output-dto/paginated-comment-list.swagger-output-dto';
 import { PaginatedPostListSwaggerOutputDTO } from './output-dto/paginated-post-list.swagger-output-dto';
 
 /*Контроллер для постов.*/
-@ApiTags('Posts')
+@ApiTags(SETTINGS.POSTS_API_TAG)
 @Controller(SETTINGS.POSTS_PREFIX)
 export class PostsController {
   public constructor(
@@ -62,7 +62,7 @@ export class PostsController {
 
   /*001. POST-запрос по созданию поста.*/
   @ApiOperation({ summary: 'Create a post' })
-  @ApiCreatedResponse({ type: PostOutputDTO, description: 'Returns the created post' })
+  @ApiCreatedResponse({ description: 'Returns the created post', type: PostOutputDTO })
   @ApiBadRequestResponse({ description: 'The input data is invalid', type: ErrorsMessagesSwaggerType })
   @ApiNotFoundResponse({ description: 'The blog does not exist', type: ErrorsMessagesSwaggerType })
   @ApiUnauthorizedResponse({
@@ -70,9 +70,9 @@ export class PostsController {
     type: ErrorsMessagesSwaggerType,
   })
   @ApiBasicAuth()
+  @UseGuards(BasicAuthGuard)
   @Post(SETTINGS.CREATE_POST_PATH)
   @HttpCode(HttpStatus.CREATED)
-  @UseGuards(BasicAuthGuard)
   public async createPost(@Body() body: CreatePostInputDTO): Promise<PostOutputDTO> {
     /*Просим сервис "PostsService" создать пост.*/
     return this.postsService.create(body);
@@ -80,7 +80,7 @@ export class PostsController {
 
   /*002. POST-запрос по созданию комментария в посте.*/
   @ApiOperation({ summary: 'Create a comment for a post' })
-  @ApiCreatedResponse({ type: CommentOutputDTO, description: 'Returns the created comment' })
+  @ApiCreatedResponse({ description: 'Returns the created comment', type: CommentOutputDTO })
   @ApiBadRequestResponse({ description: 'The input data is invalid', type: ErrorsMessagesSwaggerType })
   @ApiNotFoundResponse({ description: 'The post does not exist', type: ErrorsMessagesSwaggerType })
   @ApiUnauthorizedResponse({
@@ -88,74 +88,74 @@ export class PostsController {
     type: ErrorsMessagesSwaggerType,
   })
   @ApiBearerAuth()
+  @UseGuards(AccessJwtAuthGuard)
   @Post(SETTINGS.CREATE_COMMENT_FOR_POST_PATH)
   @HttpCode(HttpStatus.CREATED)
-  @UseGuards(JwtAuthGuard)
   public async createCommentForPost(
     @Param('postId') id: string,
     @Body() body: CreateCommentForPostInputDTO,
-    @ExtractUserDataFromRequest() userJwtAuthContext: UserJwtAuthContextDTO
+    @ExtractUserDataFromRequest() userJwtAccessAuthContext: UserAccessJwtAuthContextDTO
   ): Promise<CommentOutputDTO> {
     /*Просим сервис "CommentsService" создать комментарий в посте.*/
-    return this.commentsService.createForPost(id, body, userJwtAuthContext);
+    return this.commentsService.createForPost(id, body, userJwtAccessAuthContext);
   }
 
   /*003. GET-запрос по поиску поста по ID, используя URI-параметры.*/
   @ApiOperation({ summary: 'Get a post by ID. Bearer auth is optional to get personalized like status' })
-  @ApiOkResponse({ type: PostOutputDTO, description: 'Returns the post' })
+  @ApiOkResponse({ description: 'Returns the post', type: PostOutputDTO })
   @ApiNotFoundResponse({ description: 'The post does not exist', type: ErrorsMessagesSwaggerType })
   @ApiBearerAuth()
   @ApiParam({ name: 'id', description: 'Post ID', format: 'ObjectId' })
+  @UseGuards(OptionalAccessJwtAuthGuard)
   @Get(SETTINGS.GET_POST_BY_ID_PATH)
   @HttpCode(HttpStatus.OK)
-  @UseGuards(OptionalJwtAuthGuard)
   public async getPostById(
     @Param('id') id: string,
-    @ExtractUserDataFromRequest() userJwtAuthContext: UserJwtAuthContextDTO | null
+    @ExtractUserDataFromRequest() userAccessJwtAuthContext: UserAccessJwtAuthContextDTO | null
   ): Promise<PostOutputDTO> {
     /*Просим query-сервис "PostsQueryService" найти пост по ID.*/
-    return this.postsQueryService.findById(id, userJwtAuthContext?.id);
+    return this.postsQueryService.findById(id, userAccessJwtAuthContext?.id);
   }
 
   /*004. GET-запрос по поиску постов с пагинацией, используя query-параметры.*/
   @ApiOperation({ summary: 'Get a paginated list of posts. Bearer auth is optional to get personalized like statuses' })
-  @ApiOkResponse({ type: PaginatedPostListSwaggerOutputDTO, description: 'Returns a paginated list of posts' })
+  @ApiOkResponse({ description: 'Returns a paginated list of posts', type: PaginatedPostListSwaggerOutputDTO })
   @ApiNotFoundResponse({ description: 'The blog does not exist', type: ErrorsMessagesSwaggerType })
   @ApiBearerAuth()
+  @UseGuards(OptionalAccessJwtAuthGuard)
   @Get(SETTINGS.GET_POST_LIST_PATH)
   @HttpCode(HttpStatus.OK)
-  @UseGuards(OptionalJwtAuthGuard)
   public async getPostList(
     @Query() query: GetPostListQueryInputDTO,
-    @ExtractUserDataFromRequest() userJwtAuthContext: UserJwtAuthContextDTO | null
+    @ExtractUserDataFromRequest() userAccessJwtAuthContext: UserAccessJwtAuthContextDTO | null
   ): Promise<PaginationMetaDataOutputDTO<PostListOutputDTO>> {
     /*Просим query-сервис "PostsQueryService" найти посты.*/
-    return this.postsQueryService.findAll(query, undefined, userJwtAuthContext?.id);
+    return this.postsQueryService.findAll(query, undefined, userAccessJwtAuthContext?.id);
   }
 
   /*005. GET-запрос по поиску комментариев с пагинацией по ID поста, используя query-параметры.*/
   @ApiOperation({
     summary: 'Get a paginated list of comments by post ID. Bearer auth is optional to get personalized like statuses',
   })
-  @ApiOkResponse({ type: PaginatedCommentListSwaggerOutputDTO, description: 'Returns a paginated list of comments' })
+  @ApiOkResponse({ description: 'Returns a paginated list of comments', type: PaginatedCommentListSwaggerOutputDTO })
   @ApiNotFoundResponse({ description: 'The post does not exist', type: ErrorsMessagesSwaggerType })
   @ApiBearerAuth()
   @ApiParam({ name: 'postId', description: 'Post ID', format: 'ObjectId' })
+  @UseGuards(OptionalAccessJwtAuthGuard)
   @Get(SETTINGS.GET_COMMENT_LIST_BY_POST_ID_PATH)
   @HttpCode(HttpStatus.OK)
-  @UseGuards(OptionalJwtAuthGuard)
   public async getCommentListByPostId(
     @Param('postId') id: string,
     @Query() query: GetCommentListByPostIdQueryInputDTO,
-    @ExtractUserDataFromRequest() userJwtAuthContext: UserJwtAuthContextDTO | null
+    @ExtractUserDataFromRequest() userAccessJwtAuthContext: UserAccessJwtAuthContextDTO | null
   ): Promise<PaginationMetaDataOutputDTO<CommentListOutputDTO>> {
     /*Просим query-сервис "CommentsQueryService" найти комментарии по ID поста.*/
-    return this.commentsQueryService.findAllByPostId(id, query, userJwtAuthContext?.id);
+    return this.commentsQueryService.findAllByPostId(id, query, userAccessJwtAuthContext?.id);
   }
 
   /*006. PUT-запрос по изменению поста по ID, используя URI-параметры.*/
   @ApiOperation({ summary: 'Update a post by ID' })
-  @ApiNoContentResponse({ description: 'The post has been updated' })
+  @ApiNoContentResponse({ description: 'Updates the post' })
   @ApiBadRequestResponse({ description: 'The input data is invalid', type: ErrorsMessagesSwaggerType })
   @ApiNotFoundResponse({ description: 'The post does not exist', type: ErrorsMessagesSwaggerType })
   @ApiUnauthorizedResponse({
@@ -164,9 +164,9 @@ export class PostsController {
   })
   @ApiBasicAuth()
   @ApiParam({ name: 'id', description: 'Post ID', format: 'ObjectId' })
+  @UseGuards(BasicAuthGuard)
   @Put(SETTINGS.UPDATE_POST_BY_ID_PATH)
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(BasicAuthGuard)
   public async updatePostById(@Param('id') id: string, @Body() body: UpdatePostInputDTO): Promise<void> {
     /*Просим сервис "PostsService" изменить пост по ID.*/
     await this.postsService.updateById(id, body);
@@ -174,7 +174,7 @@ export class PostsController {
 
   /*007. PUT-запрос по изменению статуса лайка поста по ID поста, используя URI-параметры.*/
   @ApiOperation({ summary: 'Update a post like status by ID' })
-  @ApiNoContentResponse({ description: 'The post like status has been updated' })
+  @ApiNoContentResponse({ description: 'Updates the post like status' })
   @ApiBadRequestResponse({ description: 'The input data is invalid', type: ErrorsMessagesSwaggerType })
   @ApiNotFoundResponse({ description: 'The post does not exist', type: ErrorsMessagesSwaggerType })
   @ApiUnauthorizedResponse({
@@ -183,21 +183,21 @@ export class PostsController {
   })
   @ApiBearerAuth()
   @ApiParam({ name: 'id', description: 'Post ID', format: 'ObjectId' })
+  @UseGuards(AccessJwtAuthGuard)
   @Put(SETTINGS.LIKE_POST_BY_ID_PATH)
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(JwtAuthGuard)
   public async updatePostLikeStatusById(
     @Param('id') id: string,
     @Body() body: UpdatePostLikeStatusByIdInputDTO,
-    @ExtractUserDataFromRequest() userJwtAuthContext: UserJwtAuthContextDTO
+    @ExtractUserDataFromRequest() userAccessJwtAuthContext: UserAccessJwtAuthContextDTO
   ): Promise<void> {
     /*Просим сервис "PostsService" изменить статус лайка поста по ID поста.*/
-    await this.postsService.updatePostLikeStatusById(id, body, userJwtAuthContext);
+    await this.postsService.updatePostLikeStatusById(id, body, userAccessJwtAuthContext);
   }
 
   /*008. DELETE-запрос по удалению поста по ID, используя URI-параметры.*/
   @ApiOperation({ summary: 'Delete a post by ID' })
-  @ApiNoContentResponse({ description: 'The post has been deleted' })
+  @ApiNoContentResponse({ description: 'Deletes the post' })
   @ApiNotFoundResponse({ description: 'The post does not exist', type: ErrorsMessagesSwaggerType })
   @ApiUnauthorizedResponse({
     description: 'Wrong authorization type or the basic auth credentials are incorrect',
@@ -205,9 +205,9 @@ export class PostsController {
   })
   @ApiParam({ name: 'id', description: 'Post ID', format: 'ObjectId' })
   @ApiBasicAuth()
+  @UseGuards(BasicAuthGuard)
   @Delete(SETTINGS.DELETE_POST_BY_ID_PATH)
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(BasicAuthGuard)
   public async deletePostById(@Param('id') id: string): Promise<void> {
     /*Просим сервис "PostsService" удалить пост по ID.*/
     await this.postsService.deleteById(id);

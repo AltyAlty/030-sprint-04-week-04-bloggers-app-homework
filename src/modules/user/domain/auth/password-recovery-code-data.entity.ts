@@ -5,7 +5,7 @@ import { CreatePasswordRecoveryCodeDataDomainDTO } from './domain-dto/create-pas
 import { UpdatePasswordRecoveryCodeDataDomainDTO } from './domain-dto/update-password-recovery-code-data.domain-dto';
 
 /*Класс для сущности данных о коде восстановления пароля пользователя.*/
-@Schema({ timestamps: true })
+@Schema()
 export class PasswordRecoveryCodeData {
   @Prop({
     type: String,
@@ -27,12 +27,6 @@ export class PasswordRecoveryCodeData {
 
   @Prop({ type: Date, required: true })
   public expirationDate: Date;
-
-  public createdAt: Date;
-  public updatedAt: Date;
-
-  @Prop({ type: Date, default: null })
-  public deletedAt: Date | null;
 
   /*Метод для создания данных о коде восстановления пароля пользователя.*/
   public static createInstance(dto: CreatePasswordRecoveryCodeDataDomainDTO): PasswordRecoveryCodeDataDocumentType {

@@ -38,6 +38,8 @@ export class CoreConfig {
     ) as boolean;
 
     this.APP_NAME_FOR_SWAGGER = this.configService.get('APP_NAME_FOR_SWAGGER');
+    this.REQUEST_RATE_LIMIT = Number(this.configService.get('REQUEST_RATE_LIMIT'));
+    this.REQUEST_RATE_LIMIT_TTL = Number(this.configService.get('REQUEST_RATE_LIMIT_TTL'));
     configValidationUtils.validateConfig(this);
   }
 
@@ -78,4 +80,10 @@ export class CoreConfig {
   @IsNotEmpty({ message: '$property must not be empty' })
   @Trim()
   APP_NAME_FOR_SWAGGER: string;
+
+  @IsNumber({}, { message: '$property must be a number' })
+  REQUEST_RATE_LIMIT: number;
+
+  @IsNumber({}, { message: '$property must be a number' })
+  REQUEST_RATE_LIMIT_TTL: number;
 }

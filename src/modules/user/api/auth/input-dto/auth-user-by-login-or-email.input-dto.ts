@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString, Length } from 'class-validator';
-import { Trim } from '../../../../../../core/decorators/transformation/trim.transformation-decorator';
-import { USER_VALIDATION_CONSTRAINTS } from '../../../../../../core/validation/constraints/user.validation-constraints';
-import { IsEmailOrLogin } from '../../decorators/validation/is-email-or-login.validation-decorator';
+import { Trim } from '../../../../../core/decorators/transformation/trim.transformation-decorator';
+import { USER_VALIDATION_CONSTRAINTS } from '../../../../../core/validation/constraints/user.validation-constraints';
+import { IsEmailOrLogin } from '../decorators/validation/is-email-or-login.validation-decorator';
 
 /*Валидационный Input DTO для аутентификации пользователя по логину или email и паролю.*/
 export class AuthUserByLoginOrEmailInputDTO {

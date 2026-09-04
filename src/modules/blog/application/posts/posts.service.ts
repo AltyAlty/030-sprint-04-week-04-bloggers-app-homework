@@ -7,7 +7,7 @@ import { PostLikeStatusInputDTO } from '../../api/posts/input-dto/update-post-li
 import { PostOutputDTO } from '../../api/posts/output-dto/post.output-dto';
 import { PostLikeStatusOutputDTO } from '../../api/posts/output-dto/post-like-status.output-dto';
 import { DomainException, DomainExceptionCode } from '../../../../core/exceptions/domain/domain.exception';
-import { UserJwtAuthContextDTO } from '../../../../core/guards/jwt-auth/dto/user-jwt-auth-context.dto';
+import { UserAccessJwtAuthContextDTO } from '../../../../core/guards/access-jwt-auth/dto/user-access-jwt-auth-context.dto';
 import { BlogDocumentType } from '../../domain/blogs/document-types/blog.document-type';
 import { PostDocumentType } from '../../domain/posts/document-types/post.document-type';
 import { PostLikeDataDocumentType } from '../../domain/posts/document-types/post-like-data.document-type';
@@ -104,7 +104,7 @@ export class PostsService {
   public async updatePostLikeStatusById(
     id: string,
     dto: UpdatePostLikeStatusByIdDTO,
-    userJwtAuthContext: UserJwtAuthContextDTO
+    userAccessJwtAuthContext: UserAccessJwtAuthContextDTO
   ): Promise<void> {
     /*Просим репозиторий "PostsRepository" найти пост по ID в БД.*/
     const post: PostDocumentType | null = await this.postsRepository.findById(id);
@@ -122,7 +122,7 @@ export class PostsService {
     пользователя в БД.*/
     const postLikeData: PostLikeDataDocumentType | null = await this.postsRepository.findPostLikeDataByPostIdAndUserId(
       id,
-      userJwtAuthContext.id
+      userAccessJwtAuthContext.id
     );
 
     /*Если пользователь пытается установить повторный статус лайка, то ничего не делаем.*/
@@ -136,7 +136,7 @@ export class PostsService {
     /*Если пользователь хочет убрать лайк/дизлайк.*/
     if (dto.likeStatus === PostLikeStatusInputDTO.None) {
       /*Просим репозиторий "PostsRepository" удалить данные о лайке поста по ID поста и ID пользователя в БД.*/
-      await this.postsRepository.deletePostLikeDataByPostIdAndUserId(id, userJwtAuthContext.id);
+      await this.postsRepository.deletePostLikeDataByPostIdAndUserId(id, userAccessJwtAuthContext.id);
 
       /*Изменяем количество лайков и дизлайков у поста в БД:
       1. Если уже стоял лайк, то уменьшить количество лайков на 1.
@@ -155,8 +155,8 @@ export class PostsService {
         /*Просим модель "PostLikeDataModel" создать данные о лайке поста в БД.*/
         const postLikeData: PostLikeDataDocumentType = this.postLikeDataModel.createInstance({
           postId: id,
-          userId: userJwtAuthContext.id,
-          login: userJwtAuthContext.login,
+          userId: userAccessJwtAuthContext.id,
+          login: userAccessJwtAuthContext.login,
           likeStatus: dto.likeStatus as unknown as PostLikeStatusDomainDTO,
         });
 
@@ -186,8 +186,8 @@ export class PostsService {
         /*Просим модель "PostLikeDataModel" создать данные о лайке поста в БД.*/
         const postLikeData: PostLikeDataDocumentType = this.postLikeDataModel.createInstance({
           postId: id,
-          userId: userJwtAuthContext.id,
-          login: userJwtAuthContext.login,
+          userId: userAccessJwtAuthContext.id,
+          login: userAccessJwtAuthContext.login,
           likeStatus: dto.likeStatus as unknown as PostLikeStatusDomainDTO,
         });
 

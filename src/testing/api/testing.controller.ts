@@ -4,7 +4,7 @@ import { TestingService } from '../application/testing.service';
 import { SETTINGS } from '../../core/settings/settings';
 
 /*Контроллер для тестирования приложения.*/
-@ApiTags('Testing')
+@ApiTags(SETTINGS.TESTING_API_TAG)
 @Controller(SETTINGS.TESTING_PREFIX)
 export class TestingController {
   constructor(private readonly testingService: TestingService) {}

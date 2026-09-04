@@ -6,7 +6,7 @@ import { CommentLikeStatusInputDTO } from '../../api/comments/input-dto/update-c
 import { CommentOutputDTO } from '../../api/comments/output-dto/comment.output-dto';
 import { CommentLikeStatusOutputDTO } from '../../api/comments/output-dto/comment-like-status.output-dto';
 import { DomainException, DomainExceptionCode } from '../../../../core/exceptions/domain/domain.exception';
-import { UserJwtAuthContextDTO } from '../../../../core/guards/jwt-auth/dto/user-jwt-auth-context.dto';
+import { UserAccessJwtAuthContextDTO } from '../../../../core/guards/access-jwt-auth/dto/user-access-jwt-auth-context.dto';
 import { Comment } from '../../domain/comments/comment.entity';
 import { CommentLikeData } from '../../domain/comments/comment-like-data.entity';
 import { CommentDocumentType } from '../../domain/comments/document-types/comment.document-type';
@@ -34,7 +34,7 @@ export class CommentsService {
   public async createForPost(
     postId: string,
     dto: CreateCommentForPostDTO,
-    userJwtAuthContext: UserJwtAuthContextDTO
+    userAccessJwtAuthContext: UserAccessJwtAuthContextDTO
   ): Promise<CommentOutputDTO> {
     /*Просим репозиторий "PostsRepository" найти пост по ID.*/
     const post: PostDocumentType | null = await this.postsRepository.findById(postId);
@@ -51,7 +51,7 @@ export class CommentsService {
     const comment: CommentDocumentType = this.commentModel.createInstance({
       ...dto,
       postId,
-      commentatorInfo: { userId: userJwtAuthContext.id, userLogin: userJwtAuthContext.login },
+      commentatorInfo: { userId: userAccessJwtAuthContext.id, userLogin: userAccessJwtAuthContext.login },
     });
 
     /*Просим репозиторий "CommentsRepository" сохранить комментарий в БД.*/
@@ -67,7 +67,11 @@ export class CommentsService {
   }
 
   /*Метод для изменения комментария по ID.*/
-  public async updateById(id: string, dto: UpdateCommentDTO, userJwtAuthContext: UserJwtAuthContextDTO): Promise<void> {
+  public async updateById(
+    id: string,
+    dto: UpdateCommentDTO,
+    userAccessJwtAuthContext: UserAccessJwtAuthContextDTO
+  ): Promise<void> {
     /*Просим сервис "PostsService" найти комментарий по ID в БД.*/
     const comment: CommentDocumentType | null = await this.findByIdWithoutExceptions(id);
 
@@ -80,7 +84,7 @@ export class CommentsService {
       });
 
     /*Если пользователь не является владельцем комментария, то выбрасываем исключение с информацией об этом.*/
-    if (comment.commentatorInfo.userId !== userJwtAuthContext.id)
+    if (comment.commentatorInfo.userId !== userAccessJwtAuthContext.id)
       throw new DomainException({
         code: DomainExceptionCode.WrongCommentOwnerWhileUpdating,
         message: 'The user is not the owner of the comment to update',
@@ -97,7 +101,7 @@ export class CommentsService {
   public async updateCommentLikeStatusById(
     id: string,
     dto: UpdateCommentLikeStatusByIdDTO,
-    userJwtAuthContext: UserJwtAuthContextDTO
+    userAccessJwtAuthContext: UserAccessJwtAuthContextDTO
   ): Promise<void> {
     /*Просим репозиторий "CommentsRepository" найти комментарий по ID в БД.*/
     const comment: CommentDocumentType | null = await this.commentsRepository.findById(id);
@@ -114,7 +118,7 @@ export class CommentsService {
     /*Если комментарий был найден, то просим репозиторий "CommentsRepository" найти данные о лайке для комментария по ID
     комментария и ID пользователя в БД.*/
     const commentLikeData: CommentLikeDataDocumentType | null =
-      await this.commentsRepository.findCommentLikeDataByCommentIdAndUserId(id, userJwtAuthContext.id);
+      await this.commentsRepository.findCommentLikeDataByCommentIdAndUserId(id, userAccessJwtAuthContext.id);
 
     /*Если пользователь пытается установить повторный статус лайка, то ничего не делаем.*/
     if (
@@ -128,7 +132,7 @@ export class CommentsService {
     if (dto.likeStatus === CommentLikeStatusInputDTO.None) {
       /*Просим репозиторий "CommentsRepository" удалить данные о лайке комментария по ID комментария и ID пользователя в
       БД.*/
-      await this.commentsRepository.deleteCommentLikeDataByCommentIdAndUserId(id, userJwtAuthContext.id);
+      await this.commentsRepository.deleteCommentLikeDataByCommentIdAndUserId(id, userAccessJwtAuthContext.id);
 
       /*Изменяем количество лайков и дизлайков у комментария в БД:
       1. Если уже стоял лайк, то уменьшить количество лайков на 1.
@@ -147,7 +151,7 @@ export class CommentsService {
         /*Просим модель "CommentLikeDataModel" создать данные о лайке комментария в БД.*/
         const commentLikeData: CommentLikeDataDocumentType = this.commentLikeDataModel.createInstance({
           commentId: id,
-          userId: userJwtAuthContext.id,
+          userId: userAccessJwtAuthContext.id,
           likeStatus: dto.likeStatus as unknown as CommentLikeStatusDomainDTO,
         });
 
@@ -177,7 +181,7 @@ export class CommentsService {
         /*Просим модель "CommentLikeDataModel" создать данные о лайке комментария в БД.*/
         const commentLikeData: CommentLikeDataDocumentType = this.commentLikeDataModel.createInstance({
           commentId: id,
-          userId: userJwtAuthContext.id,
+          userId: userAccessJwtAuthContext.id,
           likeStatus: dto.likeStatus as unknown as CommentLikeStatusDomainDTO,
         });
 
@@ -224,7 +228,7 @@ export class CommentsService {
   }
 
   /*Метод для hard удаления комментария по ID.*/
-  public async deleteById(id: string, userJwtAuthContext: UserJwtAuthContextDTO): Promise<void> {
+  public async deleteById(id: string, userAccessJwtAuthContext: UserAccessJwtAuthContextDTO): Promise<void> {
     /*Просим сервис "CommentsService" найти комментарий по ID в БД.*/
     const comment: CommentDocumentType | null = await this.findByIdWithoutExceptions(id);
 
@@ -237,7 +241,7 @@ export class CommentsService {
       });
 
     /*Если пользователь не является владельцем комментария, то выбрасываем исключение с информацией об этом.*/
-    if (comment.commentatorInfo.userId !== userJwtAuthContext.id)
+    if (comment.commentatorInfo.userId !== userAccessJwtAuthContext.id)
       throw new DomainException({
         code: DomainExceptionCode.WrongCommentOwnerWhileDeleting,
         message: 'The user is not the owner of the comment to delete',

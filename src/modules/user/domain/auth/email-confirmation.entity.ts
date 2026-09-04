@@ -5,7 +5,7 @@ import { CreateEmailConfirmationDomainDTO } from './domain-dto/create-email-conf
 import { UpdateEmailConfirmationDomainDTO } from './domain-dto/update-email-confirmation.domain-dto';
 
 /*Класс для сущности данных о подтверждении регистрации пользователя.*/
-@Schema({ timestamps: true })
+@Schema()
 export class EmailConfirmation {
   @Prop({
     type: String,
@@ -27,12 +27,6 @@ export class EmailConfirmation {
 
   @Prop({ type: Date, required: true })
   public expirationDate: Date;
-
-  public createdAt: Date;
-  public updatedAt: Date;
-
-  @Prop({ type: Date, default: null })
-  public deletedAt: Date | null;
 
   /*Метод для создания данных о подтверждении регистрации пользователя.*/
   public static createInstance(dto: CreateEmailConfirmationDomainDTO): EmailConfirmationDocumentType {

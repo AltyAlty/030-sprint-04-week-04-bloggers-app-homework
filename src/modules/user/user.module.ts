@@ -3,17 +3,23 @@ import { JwtService } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PassportModule } from '@nestjs/passport';
 import { AuthController } from './api/auth/auth.controller';
+import { SecurityDevicesController } from './api/security-devices/security-devices.controller';
 import { UsersController } from './api/users/users.controller';
 import { AuthService } from './application/auth/auth.service';
+import { SecurityDevicesService } from './application/security-devices/security-devices.service';
 import { UsersService } from './application/users/users.service';
 import { AuthQueryService } from './application/auth/auth.query-service';
+import { SecurityDevicesQueryService } from './application/security-devices/security-devices.query-service';
 import { UsersQueryService } from './application/users/users.query-service';
 import { AuthRepository } from './infrastructure/auth/auth.repository';
+import { SecurityDevicesRepository } from './infrastructure/security-devices/security-devices.repository';
 import { UsersRepository } from './infrastructure/users/users.repository';
+import { SecurityDevicesQueryRepository } from './infrastructure/security-devices/security-devices.query-repository';
 import { UsersQueryRepository } from './infrastructure/users/users.query-repository';
 import { CoreModule } from '../../core/core.module';
-import { JwtAuthStrategy } from '../../core/guards/jwt-auth/jwt-auth.strategy';
+import { AccessJwtAuthStrategy } from '../../core/guards/access-jwt-auth/access-jwt-auth.strategy';
 import { LocalAuthStrategy } from '../../core/guards/local-auth/local-auth.strategy';
+import { RefreshJwtAuthStrategy } from '../../core/guards/refresh-jwt-auth/refresh-jwt-auth.strategy';
 import { AuthConfig } from './config/auth.config';
 import { AuthConfigModule } from './config/auth-config.module';
 import { EmailConfirmation, EmailConfirmationSchema } from './domain/auth/email-confirmation.entity';
@@ -21,6 +27,8 @@ import {
   PasswordRecoveryCodeData,
   PasswordRecoveryCodeDataSchema,
 } from './domain/auth/password-recovery-code-data.entity';
+import { Session, SessionSchema } from './domain/auth/session.entity';
+import { SecurityDevice, SecurityDeviceSchema } from './domain/security-devices/security-device.entity';
 import { User, UserSchema } from './domain/users/user.entity';
 
 /*Модуль для пользователей.*/
@@ -30,6 +38,8 @@ import { User, UserSchema } from './domain/users/user.entity';
       { name: User.name, schema: UserSchema },
       { name: EmailConfirmation.name, schema: EmailConfirmationSchema },
       { name: PasswordRecoveryCodeData.name, schema: PasswordRecoveryCodeDataSchema },
+      { name: Session.name, schema: SessionSchema },
+      { name: SecurityDevice.name, schema: SecurityDeviceSchema },
     ]),
     /*Используем динамический модуль, чтобы можно было использовать класс "AuthConfig" для работы с переменными
     окружения.*/
@@ -68,21 +78,26 @@ import { User, UserSchema } from './domain/users/user.entity';
 
     AuthConfigModule,
     CoreModule,
-    PassportModule.register({ defaultStrategy: 'jwt' }),
+    PassportModule.register({ defaultStrategy: 'access-jwt' }),
   ],
-  controllers: [AuthController, UsersController],
+  controllers: [AuthController, SecurityDevicesController, UsersController],
   providers: [
     LocalAuthStrategy,
-    JwtAuthStrategy,
+    AccessJwtAuthStrategy,
+    RefreshJwtAuthStrategy,
     JwtService,
     AuthService,
+    SecurityDevicesService,
     UsersService,
     AuthQueryService,
+    SecurityDevicesQueryService,
     UsersQueryService,
     AuthRepository,
+    SecurityDevicesRepository,
     UsersRepository,
+    SecurityDevicesQueryRepository,
     UsersQueryRepository,
   ],
-  exports: [AuthConfigModule, JwtAuthStrategy, AuthService, UsersService],
+  exports: [AuthConfigModule, AccessJwtAuthStrategy, AuthService, UsersService],
 })
 export class UserModule {}

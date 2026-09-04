@@ -27,8 +27,16 @@ export function swaggerSetup(app: INestApplication): void {
 
   const config: Omit<OpenAPIObject, 'paths'> = new DocumentBuilder()
     .setTitle(coreConfig.APP_NAME_FOR_SWAGGER)
-    .addBearerAuth()
-    .addBasicAuth()
+    .addBasicAuth({ type: 'http', description: `Requires administrator's credentials`, scheme: 'basic' }, 'basic')
+    .addBearerAuth(
+      { type: 'http', description: 'Requires Access JWT without "Bearer "', bearerFormat: 'JWT', scheme: 'bearer' },
+      'bearer'
+    )
+    .addCookieAuth(
+      'refreshToken',
+      { type: 'apiKey', description: 'Requires Refresh JWT', in: 'cookies', name: 'refreshToken' },
+      'refreshToken'
+    )
     .setVersion('0.1')
     .build();
 
@@ -57,7 +65,7 @@ export function swaggerSetup(app: INestApplication): void {
       Если положительное, то "controllerB" идет раньше "controllerA". Если 0, то порядок не меняется.*/
       tagsSorter: (controllerA: SwaggerController | string, controllerB: SwaggerController | string): number => {
         /*Указываем желаемый порядок отображения контроллеров.*/
-        const order: string[] = ['App', 'Auth', 'Users', 'Blogs', 'Posts', 'Comments', 'Testing'];
+        const order: string[] = ['App', 'Auth', 'Security Devices', 'Users', 'Blogs', 'Posts', 'Comments', 'Testing'];
         /*Получаем имена контроллеров.*/
         const controllerNameA: string = typeof controllerA === 'string' ? controllerA : controllerA.get('name');
         const controllerNameB: string = typeof controllerB === 'string' ? controllerB : controllerB.get('name');
@@ -87,6 +95,8 @@ export function swaggerSetup(app: INestApplication): void {
           'POST /api/auth/password-recovery',
           'POST /api/auth/new-password',
           'POST /api/auth/login',
+          'POST /api/auth/refresh-token',
+          'POST /api/auth/logout',
           'GET /api/auth/me',
         ];
 

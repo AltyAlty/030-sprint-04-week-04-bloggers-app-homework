@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { PassportModule } from '@nestjs/passport';
 import { BlogsController } from './api/blogs/blogs.controller';
 import { CommentsController } from './api/comments/comments.controller';
 import { PostsController } from './api/posts/posts.controller';
@@ -21,7 +22,6 @@ import { Comment, CommentSchema } from './domain/comments/comment.entity';
 import { CommentLikeData, CommentLikeDataSchema } from './domain/comments/comment-like-data.entity';
 import { Post, PostSchema } from './domain/posts/post.entity';
 import { PostLikeData, PostLikeDataSchema } from './domain/posts/post-like-data.entity';
-import { PassportModule } from '@nestjs/passport';
 
 /*Модуль для блогов, постов и комментариев.*/
 @Module({
@@ -34,7 +34,7 @@ import { PassportModule } from '@nestjs/passport';
       { name: CommentLikeData.name, schema: CommentLikeDataSchema },
     ]),
     UserModule,
-    PassportModule.register({ defaultStrategy: 'jwt' }),
+    PassportModule.register({ defaultStrategy: 'access-jwt' }),
   ],
   controllers: [BlogsController, PostsController, CommentsController],
   providers: [

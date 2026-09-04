@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { UsersQueryService } from '../users/users.query-service';
 import { DomainException, DomainExceptionCode } from '../../../../core/exceptions/domain/domain.exception';
-import { UserJwtAuthContextDTO } from '../../../../core/guards/jwt-auth/dto/user-jwt-auth-context.dto';
+import { UserAccessJwtAuthContextDTO } from '../../../../core/guards/access-jwt-auth/dto/user-access-jwt-auth-context.dto';
 import { UserDocumentType } from '../../domain/users/document-types/user.document-type';
 import { AuthUserDataDTO } from './dto/auth-user-data.dto';
 
@@ -11,9 +11,13 @@ export class AuthQueryService {
   public constructor(private readonly usersQueryService: UsersQueryService) {}
 
   /*Метод для получения данных о пользователе по ID пользователя при предоставлении AT.*/
-  public async getAuthUserDataByUserId(userJwtAuthContext: UserJwtAuthContextDTO): Promise<AuthUserDataDTO> {
+  public async getAuthUserDataByUserId(
+    userAccessJwtAuthContext: UserAccessJwtAuthContextDTO
+  ): Promise<AuthUserDataDTO> {
     /*Просим query-сервис "usersQueryService" найти пользователя по ID без выброса исключений.*/
-    const user: UserDocumentType | null = await this.usersQueryService.findByIdWithoutExceptions(userJwtAuthContext.id);
+    const user: UserDocumentType | null = await this.usersQueryService.findByIdWithoutExceptions(
+      userAccessJwtAuthContext.id
+    );
 
     /*Если пользователь не был найден, то выбрасываем исключение с информацией об этом.*/
     if (!user)

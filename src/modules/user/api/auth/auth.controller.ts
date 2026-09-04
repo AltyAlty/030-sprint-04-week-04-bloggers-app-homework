@@ -2,10 +2,12 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Post, Res, UseGuards } fro
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
+  ApiCookieAuth,
   ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
+  ApiTooManyRequestsResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import type { Response } from 'express';
@@ -13,23 +15,29 @@ import { AuthService } from '../../application/auth/auth.service';
 import { UsersService } from '../../application/users/users.service';
 import { AuthQueryService } from '../../application/auth/auth.query-service';
 import { ErrorsMessagesSwaggerType } from '../../../../core/validation/types/errors-messages.type';
-import { AuthUserByLoginOrEmailInputDTO } from './input-dto/query/auth-user-by-login-or-email.input-dto';
-import { ConfirmUserByCodeInputDTO } from './input-dto/query/confirm-user-by-code.input-dto';
-import { RegisterUserInputDTO } from './input-dto/query/register-user.input-dto';
-import { ResendConfirmationEmailInputDTO } from './input-dto/query/resend-confirmation-email.input-dto';
-import { SendPasswordRecoveryCodeInputDTO } from './input-dto/query/send-password-recovery-code.input-dto';
-import { SetNewPasswordByPasswordRecoveryCodeInputDTO } from './input-dto/query/set-new-password-by-password-recovery-code.input-dto';
+import { AuthUserByLoginOrEmailInputDTO } from './input-dto/auth-user-by-login-or-email.input-dto';
+import { ConfirmUserByCodeInputDTO } from './input-dto/confirm-user-by-code.input-dto';
+import { RegisterUserInputDTO } from './input-dto/register-user.input-dto';
+import { ResendConfirmationEmailInputDTO } from './input-dto/resend-confirmation-email.input-dto';
+import { SendPasswordRecoveryCodeInputDTO } from './input-dto/send-password-recovery-code.input-dto';
+import { SetNewPasswordByPasswordRecoveryCodeInputDTO } from './input-dto/set-new-password-by-password-recovery-code.input-dto';
 import { AuthUserByLoginOrEmailOutputDTO } from './output-dto/auth-user-by-login-or-email.output-dto';
 import { GetAuthUserDataByAccessTokenOutputDTO } from './output-dto/get-auth-user-data-by-access-token.output-dto';
-import { UserJwtAuthContextDTO } from '../../../../core/guards/jwt-auth/dto/user-jwt-auth-context.dto';
-import { JwtAuthGuard } from '../../../../core/guards/jwt-auth/jwt-auth.guard';
+import { GetNewAccessAndRefreshTokensOutputDTO } from './output-dto/get-new-access-and-refresh-tokens.output-dto';
+import { AccessJwtAuthGuard } from '../../../../core/guards/access-jwt-auth/access-jwt-auth.guard';
+import { UserAccessJwtAuthContextDTO } from '../../../../core/guards/access-jwt-auth/dto/user-access-jwt-auth-context.dto';
 import { UserLocalAuthContextDTO } from '../../../../core/guards/local-auth/dto/user-local-auth-context.dto';
 import { LocalAuthGuard } from '../../../../core/guards/local-auth/local-auth.guard';
+import { UserRefreshJwtAuthContextDTO } from '../../../../core/guards/refresh-jwt-auth/dto/user-refresh-jwt-auth-context.dto';
+import { RefreshJwtAuthGuard } from '../../../../core/guards/refresh-jwt-auth/refresh-jwt-auth.guard';
+import { RequestRateLimitingGuard } from '../../../../core/guards/request-rate-limiting/request-rate-limiting.guard';
 import { SETTINGS } from '../../../../core/settings/settings';
+import { UserAgentAndIpDTO } from './decorators/param-extraction/dto/user-agent-and-ip.dto';
+import { ExtractIpAndUserAgentFromRequest } from './decorators/param-extraction/extract-ip-and-user-agent-from-request.param-decorator';
 import { ExtractUserDataFromRequest } from './decorators/param-extraction/extract-user-data-from-request.param-decorator';
 
 /*Контроллер для работы с аутентификацией и авторизацией.*/
-@ApiTags('Auth')
+@ApiTags(SETTINGS.AUTH_API_TAG)
 @Controller(SETTINGS.AUTH_PREFIX)
 export class AuthController {
   public constructor(
@@ -41,13 +49,14 @@ export class AuthController {
   /*001. POST-запрос по регистрации пользователя.*/
   @ApiOperation({ summary: 'Register a user' })
   @ApiNoContentResponse({
-    description:
-      'User account has been created. An email with a code to complete the registration has been sent to the user',
+    description: 'Creates a user account and sends an email with a code to complete the registration',
   })
   @ApiBadRequestResponse({
     description: 'The input data is invalid or the user already exists',
     type: ErrorsMessagesSwaggerType,
   })
+  @ApiTooManyRequestsResponse({ description: 'Too many requests. Not more than 5 requests per 10 seconds' })
+  @UseGuards(RequestRateLimitingGuard)
   @Post(SETTINGS.REGISTER_USER_PATH)
   @HttpCode(HttpStatus.NO_CONTENT)
   public async registerUser(@Body() body: RegisterUserInputDTO): Promise<void> {
@@ -57,13 +66,13 @@ export class AuthController {
 
   /*002. POST-запрос по повторной отправке письма для подтверждения регистрации пользователя.*/
   @ApiOperation({ summary: 'Resend a registration confirmation email' })
-  @ApiNoContentResponse({
-    description: 'An email with a code to complete the registration has been resent to the user',
-  })
+  @ApiNoContentResponse({ description: 'Resends an email with a code to complete the registration' })
   @ApiBadRequestResponse({
     description: 'The email is invalid, the user has never registered or the user is already registered',
     type: ErrorsMessagesSwaggerType,
   })
+  @ApiTooManyRequestsResponse({ description: 'Too many requests. Not more than 5 requests per 10 seconds' })
+  @UseGuards(RequestRateLimitingGuard)
   @Post(SETTINGS.RESEND_CONFIRMATION_EMAIL_PATH)
   @HttpCode(HttpStatus.NO_CONTENT)
   public async resendConfirmationEmail(@Body() body: ResendConfirmationEmailInputDTO): Promise<void> {
@@ -73,12 +82,14 @@ export class AuthController {
 
   /*003. POST-запрос по подтверждению регистрации пользователя по коду подтверждения регистрации пользователя.*/
   @ApiOperation({ summary: 'Confirm a user registration by confirmation code' })
-  @ApiNoContentResponse({ description: 'The user registration has been confirmed' })
+  @ApiNoContentResponse({ description: 'Confirms the user registration' })
   @ApiBadRequestResponse({
     description:
       'The confirmation code is invalid or expired, the user has never registered or the user is already registered',
     type: ErrorsMessagesSwaggerType,
   })
+  @ApiTooManyRequestsResponse({ description: 'Too many requests. Not more than 5 requests per 10 seconds' })
+  @UseGuards(RequestRateLimitingGuard)
   @Post(SETTINGS.CONFIRM_USER_BY_CODE_PATH)
   @HttpCode(HttpStatus.NO_CONTENT)
   public async confirmUserByCode(@Body() body: ConfirmUserByCodeInputDTO): Promise<void> {
@@ -91,9 +102,11 @@ export class AuthController {
   @ApiOperation({ summary: 'Send a password recovery code' })
   @ApiNoContentResponse({
     description:
-      'An email with a password recovery code has been sent to the user (even if the user is not registered to prevent email detection)',
+      'Sends an email with a password recovery code (even if the user is not registered to prevent email detection)',
   })
   @ApiBadRequestResponse({ description: 'The email is invalid', type: ErrorsMessagesSwaggerType })
+  @ApiTooManyRequestsResponse({ description: 'Too many requests. Not more than 5 requests per 10 seconds' })
+  @UseGuards(RequestRateLimitingGuard)
   @Post(SETTINGS.SEND_PASSWORD_RECOVERY_CODE_PATH)
   @HttpCode(HttpStatus.NO_CONTENT)
   public async sendPasswordRecoveryCode(@Body() body: SendPasswordRecoveryCodeInputDTO): Promise<void> {
@@ -103,11 +116,13 @@ export class AuthController {
 
   /*005. POST-запрос по установлению нового пароля пользователя по коду восстановления пароля пользователя.*/
   @ApiOperation({ summary: 'Set a new password by password recovery code' })
-  @ApiNoContentResponse({ description: `The user's password has been updated` })
+  @ApiNoContentResponse({ description: `Updates the user's password` })
   @ApiBadRequestResponse({
     description: 'The password recovery code is invalid or expired, the password is invalid or the user does not exist',
     type: ErrorsMessagesSwaggerType,
   })
+  @ApiTooManyRequestsResponse({ description: 'Too many requests. Not more than 5 requests per 10 seconds' })
+  @UseGuards(RequestRateLimitingGuard)
   @Post(SETTINGS.SET_NEW_PASSWORD_BY_PASSWORD_RECOVERY_CODE_PATH)
   @HttpCode(HttpStatus.NO_CONTENT)
   public async setNewPasswordByPasswordRecoveryCode(
@@ -120,7 +135,7 @@ export class AuthController {
   /*006. POST-запрос по аутентификации пользователя по логину или email и паролю.*/
   @ApiOperation({ summary: 'Log in a user by login or email' })
   @ApiOkResponse({
-    description: 'Access (through body) and refresh (through cookies) JWT have been sent to the user',
+    description: 'Sends Access (through body) and Refresh (through cookies) JWTs',
     type: AuthUserByLoginOrEmailOutputDTO,
   })
   @ApiBadRequestResponse({ description: 'The auth credentials are invalid', type: ErrorsMessagesSwaggerType })
@@ -128,18 +143,21 @@ export class AuthController {
     description: 'The auth credentials are incorrect',
     type: ErrorsMessagesSwaggerType,
   })
+  @ApiTooManyRequestsResponse({ description: 'Too many requests. Not more than 5 requests per 10 seconds' })
+  /*Подключаем гард для аутентификации по логину и паролю.*/
+  @UseGuards(RequestRateLimitingGuard, LocalAuthGuard)
   @Post(SETTINGS.AUTH_USER_BY_LOGIN_OR_EMAIL_PATH)
   @HttpCode(HttpStatus.OK)
-  /*Подключаем гард для аутентификации по логину и паролю.*/
-  @UseGuards(LocalAuthGuard)
   public async authUserByLoginOrEmail(
     @Body() body: AuthUserByLoginOrEmailInputDTO,
     @ExtractUserDataFromRequest() userLocalAuthContext: UserLocalAuthContextDTO,
-    @Res({ passthrough: true }) res: Response
+    @ExtractIpAndUserAgentFromRequest() ipAndUserAgent: UserAgentAndIpDTO,
+    @Res({ passthrough: true })
+    res: Response
   ): Promise<AuthUserByLoginOrEmailOutputDTO> {
-    /*Просим сервис "AuthService" создать AT и RT для пользователя.*/
+    /*Просим сервис "AuthService" аутентифицировать пользователя.*/
     const { accessToken, refreshToken }: { accessToken: string; refreshToken: string } =
-      await this.authService.createUserTokensData(userLocalAuthContext);
+      await this.authService.authUser(userLocalAuthContext, ipAndUserAgent);
 
     /*Отправляем RT клиенту через cookies, используя метод "res.cookie()" из Express.js.*/
     res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true });
@@ -147,25 +165,74 @@ export class AuthController {
     return { accessToken };
   }
 
-  /*007. GET-запрос по получению данных пользователя по AT.*/
+  /*007. POST-запрос по получению новой пары AT и RT.*/
+  @ApiOperation({ summary: 'Get new Access and Refresh JWTs by refresh JWT' })
+  @ApiOkResponse({
+    description: 'Sends new Access (through body) and Refresh (through cookies) JWTs',
+    type: GetNewAccessAndRefreshTokensOutputDTO,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'The refresh JWT is invalid, incorrect or expired',
+    type: ErrorsMessagesSwaggerType,
+  })
+  @ApiCookieAuth('refreshToken')
+  /*Подключаем гард для авторизации по Refresh JWT.*/
+  @UseGuards(RefreshJwtAuthGuard)
+  @Post(SETTINGS.GET_NEW_ACCESS_AND_REFRESH_TOKENS_PATH)
+  @HttpCode(HttpStatus.OK)
+  public async getNewAccessAndRefreshTokens(
+    @ExtractUserDataFromRequest() userRefreshJwtAuthContext: UserRefreshJwtAuthContextDTO,
+    @ExtractIpAndUserAgentFromRequest() ipAndUserAgent: UserAgentAndIpDTO,
+    @Res({ passthrough: true })
+    res: Response
+  ): Promise<GetNewAccessAndRefreshTokensOutputDTO> {
+    /*Просим сервис "AuthService" создать новую пару AT и RT.*/
+    const { accessToken, refreshToken }: { accessToken: string; refreshToken: string } =
+      await this.authService.getNewAccessAndRefreshTokens(userRefreshJwtAuthContext, ipAndUserAgent);
+
+    /*Отправляем RT клиенту через cookies, используя метод "res.cookie()" из Express.js.*/
+    res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true });
+    /*Отправляем AT клиенту через тело ответа.*/
+    return { accessToken };
+  }
+
+  /*008. POST-запрос по отзыву пользовательской сессии.*/
+  @ApiOperation({ summary: 'Log a user out by Refresh JWT' })
+  @ApiNoContentResponse({ description: 'Logs the user out' })
+  @ApiUnauthorizedResponse({
+    description: 'The refresh JWT is invalid, incorrect or expired',
+    type: ErrorsMessagesSwaggerType,
+  })
+  @ApiCookieAuth('refreshToken')
+  @UseGuards(RefreshJwtAuthGuard)
+  @Post(SETTINGS.LOGOUT_PATH)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  public async revokeSession(
+    @ExtractUserDataFromRequest() userRefreshJwtAuthContext: UserRefreshJwtAuthContextDTO
+  ): Promise<void> {
+    /*Просим сервис "AuthService" отозвать сессию.*/
+    await this.authService.revokeSession(userRefreshJwtAuthContext);
+  }
+
+  /*009. GET-запрос по получению данных пользователя по AT.*/
   @ApiOperation({ summary: 'Get authenticated user data by Access JWT' })
   @ApiOkResponse({
+    description: 'Sends authenticated user data',
     type: GetAuthUserDataByAccessTokenOutputDTO,
-    description: 'Authenticated user data has been sent to the user',
   })
   @ApiUnauthorizedResponse({
     description: 'The Access JWT is invalid or the user does not exist',
     type: ErrorsMessagesSwaggerType,
   })
   @ApiBearerAuth()
+  /*Подключаем гард для авторизации по Access JWT.*/
+  @UseGuards(AccessJwtAuthGuard)
   @Get(SETTINGS.GET_USER_DATA_BY_ACCESS_TOKEN_PATH)
   @HttpCode(HttpStatus.OK)
-  /*Подключаем гард для авторизации по JWT.*/
-  @UseGuards(JwtAuthGuard)
   public async getAuthUserDataByAccessToken(
-    @ExtractUserDataFromRequest() userJwtAuthContext: UserJwtAuthContextDTO
+    @ExtractUserDataFromRequest() userAccessJwtAuthContext: UserAccessJwtAuthContextDTO
   ): Promise<GetAuthUserDataByAccessTokenOutputDTO> {
     /*Просим сервис "AuthQueryService" найти данные о пользователе по ID пользователя при предоставлении AT.*/
-    return this.authQueryService.getAuthUserDataByUserId(userJwtAuthContext);
+    return this.authQueryService.getAuthUserDataByUserId(userAccessJwtAuthContext);
   }
 }

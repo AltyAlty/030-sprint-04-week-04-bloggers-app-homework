@@ -39,16 +39,16 @@ import { PostOutputDTO } from '../posts/output-dto/post.output-dto';
 import { PostListOutputDTO } from '../posts/output-dto/post-list.output-dto';
 import { BlogOutputDTO } from './output-dto/blog.output-dto';
 import { BlogListOutputDTO } from './output-dto/blog-list.output-dto';
+import { UserAccessJwtAuthContextDTO } from '../../../../core/guards/access-jwt-auth/dto/user-access-jwt-auth-context.dto';
 import { BasicAuthGuard } from '../../../../core/guards/basic-auth/basic-auth.guard';
-import { UserJwtAuthContextDTO } from '../../../../core/guards/jwt-auth/dto/user-jwt-auth-context.dto';
-import { OptionalJwtAuthGuard } from '../../../../core/guards/optional-jwt-auth/optional-jwt-auth.guard';
+import { OptionalAccessJwtAuthGuard } from '../../../../core/guards/optional-access-jwt-auth/optional-access-jwt-auth.guard';
 import { SETTINGS } from '../../../../core/settings/settings';
 import { ExtractUserDataFromRequest } from '../../../user/api/auth/decorators/param-extraction/extract-user-data-from-request.param-decorator';
 import { PaginatedPostListSwaggerOutputDTO } from '../posts/output-dto/paginated-post-list.swagger-output-dto';
 import { PaginatedBlogListSwaggerOutputDTO } from './output-dto/paginated-blog-list.swagger-output-dto';
 
 /*Контроллер для блогов.*/
-@ApiTags('Blogs')
+@ApiTags(SETTINGS.BLOGS_API_TAG)
 @Controller(SETTINGS.BLOGS_PREFIX)
 export class BlogsController {
   public constructor(
@@ -60,16 +60,16 @@ export class BlogsController {
 
   /*001. POST-запрос по созданию блога.*/
   @ApiOperation({ summary: 'Create a blog' })
-  @ApiCreatedResponse({ type: BlogOutputDTO, description: 'Returns the created blog' })
+  @ApiCreatedResponse({ description: 'Returns the created blog', type: BlogOutputDTO })
   @ApiBadRequestResponse({ description: 'The input data is invalid', type: ErrorsMessagesSwaggerType })
   @ApiUnauthorizedResponse({
     description: 'Wrong authorization type or the basic auth credentials are incorrect',
     type: ErrorsMessagesSwaggerType,
   })
   @ApiBasicAuth()
+  @UseGuards(BasicAuthGuard)
   @Post(SETTINGS.CREATE_BLOG_PATH)
   @HttpCode(HttpStatus.CREATED)
-  @UseGuards(BasicAuthGuard)
   public async createBlog(@Body() body: CreateBlogInputDTO): Promise<BlogOutputDTO> {
     /*Просим сервис "BlogsService" создать блог.*/
     return this.blogsService.create(body);
@@ -77,7 +77,7 @@ export class BlogsController {
 
   /*002. POST-запрос по созданию поста в блоге.*/
   @ApiOperation({ summary: 'Create a post for a blog' })
-  @ApiCreatedResponse({ type: PostOutputDTO, description: 'Returns the created post' })
+  @ApiCreatedResponse({ description: 'Returns the created post', type: PostOutputDTO })
   @ApiBadRequestResponse({ description: 'The input data is invalid', type: ErrorsMessagesSwaggerType })
   @ApiNotFoundResponse({ description: 'The blog does not exist', type: ErrorsMessagesSwaggerType })
   @ApiUnauthorizedResponse({
@@ -86,9 +86,9 @@ export class BlogsController {
   })
   @ApiBasicAuth()
   @ApiParam({ name: 'blogId', description: 'Blog ID', format: 'ObjectId' })
+  @UseGuards(BasicAuthGuard)
   @Post(SETTINGS.CREATE_POST_FOR_BLOG_PATH)
   @HttpCode(HttpStatus.CREATED)
-  @UseGuards(BasicAuthGuard)
   public async createPostForBlog(
     @Param('blogId') id: string,
     @Body() body: CreatePostForBlogInputDTO
@@ -111,7 +111,7 @@ export class BlogsController {
 
   /*004. GET-запрос по поиску блогов с пагинацией, используя query-параметры.*/
   @ApiOperation({ summary: 'Get a paginated list of blogs' })
-  @ApiOkResponse({ type: PaginatedBlogListSwaggerOutputDTO, description: 'Returns a paginated list of blogs' })
+  @ApiOkResponse({ description: 'Returns a paginated list of blogs', type: PaginatedBlogListSwaggerOutputDTO })
   @Get(SETTINGS.GET_BLOG_LIST_PATH)
   @HttpCode(HttpStatus.OK)
   public async getBlogList(
@@ -129,21 +129,21 @@ export class BlogsController {
   @ApiNotFoundResponse({ description: 'The blog does not exist', type: ErrorsMessagesSwaggerType })
   @ApiBearerAuth()
   @ApiParam({ name: 'blogId', description: 'Blog ID', format: 'ObjectId' })
+  @UseGuards(OptionalAccessJwtAuthGuard)
   @Get(SETTINGS.GET_POST_LIST_BY_BLOG_ID_PATH)
   @HttpCode(HttpStatus.OK)
-  @UseGuards(OptionalJwtAuthGuard)
   public async getPostListByBlogId(
     @Param('blogId') id: string,
     @Query() query: GetPostListByBlogIdQueryInputDTO,
-    @ExtractUserDataFromRequest() userJwtAuthContext: UserJwtAuthContextDTO | null
+    @ExtractUserDataFromRequest() userAccessJwtAuthContext: UserAccessJwtAuthContextDTO | null
   ): Promise<PaginationMetaDataOutputDTO<PostListOutputDTO>> {
     /*Просим query-сервис "PostsQueryService" найти посты по ID блога.*/
-    return this.postsQueryService.findAll(query, id, userJwtAuthContext?.id);
+    return this.postsQueryService.findAll(query, id, userAccessJwtAuthContext?.id);
   }
 
   /*006. PUT-запрос по изменению блога по ID, используя URI-параметры.*/
   @ApiOperation({ summary: 'Update a blog by ID' })
-  @ApiNoContentResponse({ description: 'The blog has been updated' })
+  @ApiNoContentResponse({ description: 'Updates the blog' })
   @ApiBadRequestResponse({ description: 'The input data is invalid', type: ErrorsMessagesSwaggerType })
   @ApiNotFoundResponse({ description: 'The blog does not exist', type: ErrorsMessagesSwaggerType })
   @ApiUnauthorizedResponse({
@@ -152,9 +152,9 @@ export class BlogsController {
   })
   @ApiBasicAuth()
   @ApiParam({ name: 'id', description: 'Blog ID', format: 'ObjectId' })
+  @UseGuards(BasicAuthGuard)
   @Put(SETTINGS.UPDATE_BLOG_BY_ID_PATH)
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(BasicAuthGuard)
   public async updateBlogById(@Param('id') id: string, @Body() body: UpdateBlogInputDTO): Promise<void> {
     /*Просим сервис "BlogsService" изменить блог по ID.*/
     await this.blogsService.updateById(id, body);
@@ -162,7 +162,7 @@ export class BlogsController {
 
   /*007. DELETE-запрос по удалению блога по ID, используя URI-параметры.*/
   @ApiOperation({ summary: 'Delete a blog by ID' })
-  @ApiNoContentResponse({ description: 'The blog has been deleted' })
+  @ApiNoContentResponse({ description: 'Deletes the blog' })
   @ApiNotFoundResponse({ description: 'The blog does not exist', type: ErrorsMessagesSwaggerType })
   @ApiUnauthorizedResponse({
     description: 'Wrong authorization type or the basic auth credentials are incorrect',
@@ -170,9 +170,9 @@ export class BlogsController {
   })
   @ApiBasicAuth()
   @ApiParam({ name: 'id', description: 'Blog ID', format: 'ObjectId' })
+  @UseGuards(BasicAuthGuard)
   @Delete(SETTINGS.DELETE_BLOG_BY_ID_PATH)
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(BasicAuthGuard)
   public async deleteBlogById(@Param('id') id: string): Promise<void> {
     /*Просим сервис "BlogsService" удалить блог по ID.*/
     await this.blogsService.deleteById(id);

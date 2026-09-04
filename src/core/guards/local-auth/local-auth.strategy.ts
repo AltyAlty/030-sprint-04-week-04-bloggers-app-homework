@@ -29,7 +29,7 @@ export class LocalAuthStrategy extends PassportStrategy(Strategy) {
     if (!user) {
       throw new DomainException({
         code: DomainExceptionCode.InvalidLocalAuthCredentials,
-        message: 'Invalid local authorization credentials',
+        message: 'Invalid local authorization credentials or the user registration is not confirmed',
         field: 'loginOrEmail/password',
       });
     }

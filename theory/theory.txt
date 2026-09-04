@@ -96,6 +96,7 @@
 38. Установка cookie-parser: pnpm add cookie-parser
 39. Установка типов для cookie-parser: pnpm add -D @types/cookie-parser
 40. Установка типов для @nestjs/cqrs: pnpm add @nestjs/cqrs
+41. Установка типов для @nestjs/throttler: pnpm add @nestjs/throttler
 
 /*--------------------------------------------------------------------------------------------------------------------*/
 

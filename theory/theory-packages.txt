@@ -155,6 +155,9 @@ Passport.js, позволяя использовать гарды и декор�
 48. Набор плагинов для линтера ESLint typescript-eslint - это набор плагинов, объединяющий парсер и правила, позволяющие
 линтеру ESLint понимать и проверять TypeScript, включая проверку типов.
 
+49. Модуль backend‑фреймворка NestJS @nestjs/throttler - это официальный модуль, позволяющий управлять ограничением
+частоты запросов.
+
 /*--------------------------------------------------------------------------------------------------------------------*/
 
 При работе с пакетами InversifyJS и reflect-metadata при помощи декоратора "@injectable()" помечается сущность, которая
@@ -272,5 +275,42 @@ passport-jwt.
 
 Класс "MailerModule" из модуля @nestjs-modules/mailer - это главный провайдер, который инжектируется в модули для
 отправки почты. Метод "MailerModule.forRoot()" позволяет создавать транспортер - механизм для работы с почтой.
+
+/*--------------------------------------------------------------------------------------------------------------------*/
+
+Для настройки ограничения частоты запросов при помощи модуля @nestjs/throttler, нужно сделать следующее:
+1. Инициализировать модуль и задать настройки по умолчанию в массиве "imports" модуля "AppModule":
+
+ThrottlerModule.forRootAsync({
+      imports: [CoreModule],
+      inject: [CoreConfig],
+      useFactory: (coreConfig: CoreConfig) => [
+        { ttl: coreConfig.REQUEST_RATE_LIMIT_TTL * 1000, limit: coreConfig.REQUEST_RATE_LIMIT },
+      ],
+    }),
+
+2. Создать кастомный гард, который переопределяется стандартное поведение метода, отслеживающего запросы - по умолчанию
+он отслеживает только IP-адрес, а нам нужно, чтобы он отслеживал связку IP-адреса и эндпоинта:
+
+import { Injectable } from '@nestjs/common';
+import { ThrottlerGuard } from '@nestjs/throttler';
+import { DomainException, DomainExceptionCode } from '../../exceptions/domain/domain.exception';
+
+@Injectable()
+export class RequestRateLimitingGuard extends ThrottlerGuard {
+  protected async getTracker(req: Record<string, any>): Promise<string> {
+    return Promise.resolve(`${req.ip}:${req.method}:${req.path}`);
+  }
+
+  protected throwThrottlerException(): Promise<void> {
+      throw new DomainException({ code: DomainExceptionCode.TooManyRequests, message: 'Too many requests', field: 'ip' });
+    }
+}
+
+3. Использовать кастомный гард в методах контроллера вместе с декоратором "@Throttle()" для переопределения настроек по
+умолчания, указанных в модуле "AppModule":
+
+@UseGuards(RequestRateLimitingGuard)
+@Throttle({ default: { limit: 2, ttl: 10000 } })
 
 /*--------------------------------------------------------------------------------------------------------------------*/

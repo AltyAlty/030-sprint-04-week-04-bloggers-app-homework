@@ -25,10 +25,14 @@ export class DomainExceptionFilter implements ExceptionFilter {
       case DomainExceptionCode.InvalidLocalAuthCredentials:
       case DomainExceptionCode.InvalidAccessJwtPayload:
       case DomainExceptionCode.InvalidAccessJwt:
+      case DomainExceptionCode.InvalidRefreshJwtPayload:
+      case DomainExceptionCode.InvalidRefreshJwt:
       case DomainExceptionCode.UserNotFoundWhileGettingAuthData:
       case DomainExceptionCode.NoUserDataToExtractInRequest:
         return HttpStatus.UNAUTHORIZED;
 
+      case DomainExceptionCode.SessionAlreadyMarkedAsDeleted:
+      case DomainExceptionCode.SecurityDeviceAlreadyMarkedAsDeleted:
       case DomainExceptionCode.InvalidUserRegistrationConfirmationCode:
       case DomainExceptionCode.ExpiredUserRegistrationConfirmationCode:
       case DomainExceptionCode.InvalidPasswordRecoveryCode:
@@ -45,6 +49,7 @@ export class DomainExceptionFilter implements ExceptionFilter {
       case DomainExceptionCode.CommentAlreadyMarkedAsDeleted:
         return HttpStatus.BAD_REQUEST;
 
+      case DomainExceptionCode.SecurityDeviceNotfoundWhileRevokingSessionBySecurityDeviceId:
       case DomainExceptionCode.UserNotFoundWhileDeleting:
       case DomainExceptionCode.BlogNotFoundWhilePostCreating:
       case DomainExceptionCode.BlogNotFound:
@@ -63,9 +68,13 @@ export class DomainExceptionFilter implements ExceptionFilter {
       case DomainExceptionCode.CommentNotFoundWhileDeleting:
         return HttpStatus.NOT_FOUND;
 
+      case DomainExceptionCode.WrongSecurityDeviceOwnerWhileRevokingSessionBySecurityDeviceId:
       case DomainExceptionCode.WrongCommentOwnerWhileUpdating:
       case DomainExceptionCode.WrongCommentOwnerWhileDeleting:
         return HttpStatus.FORBIDDEN;
+
+      case DomainExceptionCode.TooManyRequests:
+        return HttpStatus.TOO_MANY_REQUESTS;
 
       default:
         return HttpStatus.I_AM_A_TEAPOT;

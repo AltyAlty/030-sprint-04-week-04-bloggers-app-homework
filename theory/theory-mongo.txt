@@ -39,9 +39,9 @@ MongoDB хорошо подходит для операций чтения.
 3.2 В папке "bin" выполнить команду "./mongod.exe --dbpath .\data\db", где ".\data\db" это путь, где мы хотим создать
 саму БД (папки должны быть уже созданы). В нашем случае используется такие команды:
 PowerShell:
-./mongod.exe --dbpath ..\..\..\..\..\DevProjects\IT-IncubatorBackEndProjects\028-sprint-04-week-03-bloggers-app-homework\src\db\mongodb\data\db
+./mongod.exe --dbpath ..\..\..\..\..\DevProjects\IT-IncubatorBackEndProjects\030-sprint-04-week-04-bloggers-app-homework\src\db\mongodb\data\db
 Командная строка:
-mongod --dbpath ..\..\..\..\..\DevProjects\IT-IncubatorBackEndProjects\028-sprint-04-week-03-bloggers-app-homework\src\db\mongodb\data\db
+mongod --dbpath ..\..\..\..\..\DevProjects\IT-IncubatorBackEndProjects\030-sprint-04-week-04-bloggers-app-homework\src\db\mongodb\data\db
 4. Запустить СУБД MongoDB Shell.
 4.1 Скачать MongoDB Shell в формате .zip с сайта www.mongodb.com/try/download/shell.
 4.2 Файл "mongosh.exe" из архива скопировать в папку "bin".

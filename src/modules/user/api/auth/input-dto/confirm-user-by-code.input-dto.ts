@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString, Matches } from 'class-validator';
-import { Trim } from '../../../../../../core/decorators/transformation/trim.transformation-decorator';
-import { USER_VALIDATION_CONSTRAINTS } from '../../../../../../core/validation/constraints/user.validation-constraints';
+import { Trim } from '../../../../../core/decorators/transformation/trim.transformation-decorator';
+import { USER_VALIDATION_CONSTRAINTS } from '../../../../../core/validation/constraints/user.validation-constraints';
 
 /*Валидационный Input DTO для подтверждения регистрации пользователя по коду.*/
 export class ConfirmUserByCodeInputDTO {

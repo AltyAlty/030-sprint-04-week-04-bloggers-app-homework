@@ -33,11 +33,11 @@ export class Comment {
   @Prop({ type: CommentatorInfoSchema })
   public commentatorInfo: CommentatorInfo;
 
-  public createdAt: Date;
-  public updatedAt: Date;
-
   @Prop({ type: LikesInfoSchema })
   public likesInfo: LikesInfo;
+
+  public createdAt: Date;
+  public updatedAt: Date;
 
   @Prop({ type: Date, default: null })
   public deletedAt: Date | null;

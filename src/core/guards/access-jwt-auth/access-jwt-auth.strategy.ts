@@ -5,17 +5,17 @@ import { AuthService } from '../../../modules/user/application/auth/auth.service
 import { AuthConfig } from '../../../modules/user/config/auth.config';
 import { UserDocumentType } from '../../../modules/user/domain/users/document-types/user.document-type';
 import { DomainException, DomainExceptionCode } from '../../exceptions/domain/domain.exception';
-import { AccessTokenPayloadDTO } from './dto/access-token-payload.dto';
-import { UserJwtAuthContextDTO } from './dto/user-jwt-auth-context.dto';
+import { AccessJwtPayloadDTO } from './dto/access-jwt-payload.dto';
+import { UserAccessJwtAuthContextDTO } from './dto/user-access-jwt-auth-context.dto';
 
-/*Стратегия для авторизации по JWT, используя библиотеку Passport.js.*/
+/*Стратегия для авторизации по Access JWT, используя библиотеку Passport.js.*/
 @Injectable()
-export class JwtAuthStrategy extends PassportStrategy(Strategy, 'jwt') {
+export class AccessJwtAuthStrategy extends PassportStrategy(Strategy, 'access-jwt') {
   public constructor(
     public readonly authConfig: AuthConfig,
     private readonly authService: AuthService
   ) {
-    /*Настраиваем как библиотеке Passport.js работать с JWT.*/
+    /*Настраиваем как библиотеке Passport.js работать с Access JWT.*/
     super({
       /*Указываем искать токен в заголовке "Authorization" в формате "Bearer token".*/
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -27,12 +27,13 @@ export class JwtAuthStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   /*Реализовываем метод "validate()", требуемый библиотекой Passport.js. Этот метод в данном случае принимает
-  декодированный payload из JWT.*/
-  public async validate(payload: AccessTokenPayloadDTO): Promise<UserJwtAuthContextDTO> {
-    /*Просим сервис "AuthService" валидировать payload из JWT.*/
-    const user: UserDocumentType | null = await this.authService.validateJwtPayload(payload);
+  декодированный payload из Access JWT.*/
+  public async validate(payload: AccessJwtPayloadDTO): Promise<UserAccessJwtAuthContextDTO> {
+    /*Просим сервис "AuthService" валидировать payload из Access JWT.*/
+    const user: UserDocumentType | null = await this.authService.validateAccessJwtPayload(payload);
 
-    /*Если payload из JWT не был валидирован, то выбрасываем исключение "DomainException" с информацией об этом.*/
+    /*Если payload из Access JWT не был валидирован, то выбрасываем исключение "DomainException" с информацией об
+    этом.*/
     if (!user) {
       throw new DomainException({
         code: DomainExceptionCode.InvalidAccessJwtPayload,
@@ -41,7 +42,7 @@ export class JwtAuthStrategy extends PassportStrategy(Strategy, 'jwt') {
       });
     }
 
-    /*Если payload из JWT был валидирован, то возвращаем его и логин пользователя.*/
+    /*Если payload из Access JWT был валидирован, то возвращаем ID и логин пользователя.*/
     return { id: payload.userId, login: user.login };
   }
 }

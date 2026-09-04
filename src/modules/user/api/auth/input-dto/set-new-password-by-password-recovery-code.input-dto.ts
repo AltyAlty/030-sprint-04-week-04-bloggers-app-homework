@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString, Length, Matches } from 'class-validator';
-import { Trim } from '../../../../../../core/decorators/transformation/trim.transformation-decorator';
-import { USER_VALIDATION_CONSTRAINTS } from '../../../../../../core/validation/constraints/user.validation-constraints';
+import { Trim } from '../../../../../core/decorators/transformation/trim.transformation-decorator';
+import { USER_VALIDATION_CONSTRAINTS } from '../../../../../core/validation/constraints/user.validation-constraints';
 
 /*Валидационный Input DTO для установления нового пароля пользователя по коду восстановления пароля пользователя.*/
 export class SetNewPasswordByPasswordRecoveryCodeInputDTO {

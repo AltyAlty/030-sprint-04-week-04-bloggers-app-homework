@@ -24,11 +24,11 @@ import { SETTINGS } from '../../../../core/settings/settings';
 import { PaginatedUserListSwaggerOutputDTO } from './output-dto/paginated-user-list.swagger-output-dto';
 
 /*Контроллер для пользователей.*/
-@ApiTags('Users')
+@ApiTags(SETTINGS.USERS_API_TAG)
 @ApiBasicAuth()
-@Controller(SETTINGS.USERS_PREFIX)
 /*Подключаем гард для basic авторизации ко всем методам контроллера.*/
 @UseGuards(BasicAuthGuard)
+@Controller(SETTINGS.USERS_PREFIX)
 export class UsersController {
   public constructor(
     private readonly usersService: UsersService,
@@ -56,8 +56,8 @@ export class UsersController {
   /*002. GET-запрос по поиску пользователей с пагинацией, используя query-параметры.*/
   @ApiOperation({ summary: 'Get a paginated list of users' })
   @ApiOkResponse({
-    type: PaginatedUserListSwaggerOutputDTO,
     description: 'Returns a paginated list of users',
+    type: PaginatedUserListSwaggerOutputDTO,
   })
   @ApiUnauthorizedResponse({
     description: 'Wrong authorization type or the basic auth credentials are incorrect',
@@ -74,7 +74,7 @@ export class UsersController {
 
   /*003. DELETE-запрос по удалению пользователя по ID, используя URI-параметры.*/
   @ApiOperation({ summary: 'Delete a user by ID' })
-  @ApiNoContentResponse({ description: 'The user has been deleted' })
+  @ApiNoContentResponse({ description: 'Deletes the user' })
   @ApiNotFoundResponse({ description: 'The user does not exist', type: ErrorsMessagesSwaggerType })
   @ApiUnauthorizedResponse({
     description: 'Wrong authorization type or the basic auth credentials are incorrect',
@@ -85,6 +85,6 @@ export class UsersController {
   @HttpCode(HttpStatus.NO_CONTENT)
   public async deleteUserById(@Param('id') id: string): Promise<void> {
     /*Просим сервис "UsersService" удалить пользователя по ID.*/
-    await this.usersService.delete(id);
+    await this.usersService.deleteById(id);
   }
 }
