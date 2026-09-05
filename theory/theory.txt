@@ -115,19 +115,20 @@
 1. Создание модуля: nest g module modules/module_name.
 2. Создание контроллера без файла для тестов: nest g controller modules/module_name --no-spec.
 3. Создание сервиса без файла для тестов: nest g service modules/module_name --no-spec.
-4. Запуск сервера разработки приложения на NestJS: pnpm start:dev.
-5. Получить все команды, генерирующие шаблонные сущности: nest g --help.
-6. Компиляция TS-файлов из папки "src" в папку "dist" с использованием файла "tsconfig.build.json": pnpm build
-7. Форматирование кода при помощи Prettier: pnpm format
-8. Запуск проверки кода при помощи ESLint и автоматического исправления части ошибок: pnpm lint
-9. Запуск приложения: pnpm start
-10. Запуск приложения в режиме наблюдения: pnpm start:dev
-11. Запуск приложения в режиме наблюдения c открытием порта для подключения отладчика: pnpm start:debug
-12. Запуск приложения из папки "dist": pnpm start:prod
-13. Запуск тестов при помощи Jest: pnpm test
-14. Запуск тестов при помощи Jest в режиме наблюдения: pnpm test:watch
-15. Запуск тестов при помощи Jest c генерацией отчета о покрытии кода: pnpm test:cov
-16. Запуск пошаговой отладки тестов в IDE: pnpm test:debug
+4. Получить все команды, генерирующие шаблонные сущности: nest g --help.
+5. Быстрое развертывание приложения в облаке (требует заранее подготовленных инфраструктуры и конфигов): nest deploy
+6. Компиляция TS-файлов из папки "src" в папку "dist" с использованием файла "tsconfig.build.json": nest build
+7. Форматирование кода при помощи Prettier: prettier --write "src/**/*.ts" "__tests__/**/*.ts"
+8. Запуск проверки кода при помощи ESLint и автоматического исправления части ошибок: eslint "{src,apps,libs,__tests__}/**/*.ts" --fix
+9. Запуск проверки кода при помощи Oxlint: oxlint src/ __test__/
+10. Запуск приложения: nest start
+11. Запуск приложения в режиме наблюдения: cross-env NODE_ENV=development nest start --watch
+12. Запуск приложения в режиме наблюдения c открытием порта для подключения отладчика: cross-env NODE_ENV=development nest start --debug --watch
+13. Запуск приложения из папки "dist": node dist/main
+14. Запуск тестов при помощи Jest: jest
+15. Запуск тестов при помощи Jest в режиме наблюдения: jest --watch
+16. Запуск тестов при помощи Jest c генерацией отчета о покрытии кода: jest --coverage
+17. Запуск пошаговой отладки тестов в IDE: node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand
 
 /*--------------------------------------------------------------------------------------------------------------------*/
 

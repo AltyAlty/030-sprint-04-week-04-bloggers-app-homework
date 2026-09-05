@@ -1,7 +1,8 @@
 import { Controller, Delete, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiNoContentResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { TestingService } from '../application/testing.service';
 import { SETTINGS } from '../../core/settings/settings';
+import { TestingControllerSwaggerDecorators } from '../../core/swagger/decorators/testing-module/testing-controller.swagger-decorators';
 
 /*Контроллер для тестирования приложения.*/
 @ApiTags(SETTINGS.TESTING_API_TAG)
@@ -10,8 +11,7 @@ export class TestingController {
   constructor(private readonly testingService: TestingService) {}
 
   /*001. DELETE-запрос по очистке БД.*/
-  @ApiOperation({ summary: 'Clear the database' })
-  @ApiNoContentResponse({ description: 'The database has been cleared' })
+  @TestingControllerSwaggerDecorators.clearDb
   @Delete(SETTINGS.CLEAR_DB_PATH)
   @HttpCode(HttpStatus.NO_CONTENT)
   public async clearDb(): Promise<void> {

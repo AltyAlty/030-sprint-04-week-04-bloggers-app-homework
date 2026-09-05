@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { PaginationMetaDataOutputDTO } from '../../../../../core/pagination/output-dto/pagination-meta-data.output-dto';
-import { CommentOutputDTO } from './comment.output-dto';
-import { CommentListOutputDTO } from './comment-list.output-dto';
+import { CommentOutputDTO } from '../../../../../modules/blog/api/comments/output-dto/comment.output-dto';
+import { CommentListOutputDTO } from '../../../../../modules/blog/api/comments/output-dto/comment-list.output-dto';
+import { PaginationMetaDataOutputDTO } from '../../../../pagination/output-dto/pagination-meta-data.output-dto';
 
 /*Output DTO для списка комментариев с пагинацией для Swagger-документации, так как для Swagger нужен именно класс, а не
 просто тип.*/

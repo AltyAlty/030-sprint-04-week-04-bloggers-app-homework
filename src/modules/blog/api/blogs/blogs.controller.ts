@@ -11,24 +11,11 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiBadRequestResponse,
-  ApiBasicAuth,
-  ApiBearerAuth,
-  ApiCreatedResponse,
-  ApiNoContentResponse,
-  ApiNotFoundResponse,
-  ApiOkResponse,
-  ApiOperation,
-  ApiParam,
-  ApiTags,
-  ApiUnauthorizedResponse,
-} from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { BlogsService } from '../../application/blogs/blogs.service';
 import { PostsService } from '../../application/posts/posts.service';
 import { BlogsQueryService } from '../../application/blogs/blogs.query-service';
 import { PostsQueryService } from '../../application/posts/posts.query-service';
-import { ErrorsMessagesSwaggerType } from '../../../../core/validation/types/errors-messages.type';
 import { CreateBlogInputDTO } from './input-dto/create-blog.input-dto';
 import { CreatePostForBlogInputDTO } from './input-dto/create-post-for-blog.input-dto';
 import { GetBlogListQueryInputDTO } from './input-dto/query/get-blog-list-query.input-dto';
@@ -43,9 +30,8 @@ import { UserAccessJwtAuthContextDTO } from '../../../../core/guards/access-jwt-
 import { BasicAuthGuard } from '../../../../core/guards/basic-auth/basic-auth.guard';
 import { OptionalAccessJwtAuthGuard } from '../../../../core/guards/optional-access-jwt-auth/optional-access-jwt-auth.guard';
 import { SETTINGS } from '../../../../core/settings/settings';
+import { BlogsControllerSwaggerDecorators } from '../../../../core/swagger/decorators/blog-module/blogs-controller.swagger-decorators';
 import { ExtractUserDataFromRequest } from '../../../user/api/auth/decorators/param-extraction/extract-user-data-from-request.param-decorator';
-import { PaginatedPostListSwaggerOutputDTO } from '../posts/output-dto/paginated-post-list.swagger-output-dto';
-import { PaginatedBlogListSwaggerOutputDTO } from './output-dto/paginated-blog-list.swagger-output-dto';
 
 /*Контроллер для блогов.*/
 @ApiTags(SETTINGS.BLOGS_API_TAG)
@@ -59,14 +45,7 @@ export class BlogsController {
   ) {}
 
   /*001. POST-запрос по созданию блога.*/
-  @ApiOperation({ summary: 'Create a blog' })
-  @ApiCreatedResponse({ description: 'Returns the created blog', type: BlogOutputDTO })
-  @ApiBadRequestResponse({ description: 'The input data is invalid', type: ErrorsMessagesSwaggerType })
-  @ApiUnauthorizedResponse({
-    description: 'Wrong authorization type or the basic auth credentials are incorrect',
-    type: ErrorsMessagesSwaggerType,
-  })
-  @ApiBasicAuth()
+  @BlogsControllerSwaggerDecorators.createBlog
   @UseGuards(BasicAuthGuard)
   @Post(SETTINGS.CREATE_BLOG_PATH)
   @HttpCode(HttpStatus.CREATED)
@@ -76,16 +55,7 @@ export class BlogsController {
   }
 
   /*002. POST-запрос по созданию поста в блоге.*/
-  @ApiOperation({ summary: 'Create a post for a blog' })
-  @ApiCreatedResponse({ description: 'Returns the created post', type: PostOutputDTO })
-  @ApiBadRequestResponse({ description: 'The input data is invalid', type: ErrorsMessagesSwaggerType })
-  @ApiNotFoundResponse({ description: 'The blog does not exist', type: ErrorsMessagesSwaggerType })
-  @ApiUnauthorizedResponse({
-    description: 'Wrong authorization type or the basic auth credentials are incorrect',
-    type: ErrorsMessagesSwaggerType,
-  })
-  @ApiBasicAuth()
-  @ApiParam({ name: 'blogId', description: 'Blog ID', format: 'ObjectId' })
+  @BlogsControllerSwaggerDecorators.createPostForBlog
   @UseGuards(BasicAuthGuard)
   @Post(SETTINGS.CREATE_POST_FOR_BLOG_PATH)
   @HttpCode(HttpStatus.CREATED)
@@ -98,10 +68,7 @@ export class BlogsController {
   }
 
   /*003. GET-запрос по поиску блога по ID, используя URI-параметры.*/
-  @ApiOperation({ summary: 'Get a blog by ID' })
-  @ApiOkResponse({ type: BlogOutputDTO, description: 'Returns the blog' })
-  @ApiNotFoundResponse({ description: 'The blog does not exist', type: ErrorsMessagesSwaggerType })
-  @ApiParam({ name: 'id', description: 'Blog ID', format: 'ObjectId' })
+  @BlogsControllerSwaggerDecorators.getBlogById
   @Get(SETTINGS.GET_BLOG_BY_ID_PATH)
   @HttpCode(HttpStatus.OK)
   public async getBlogById(@Param('id') id: string): Promise<BlogOutputDTO> {
@@ -110,8 +77,7 @@ export class BlogsController {
   }
 
   /*004. GET-запрос по поиску блогов с пагинацией, используя query-параметры.*/
-  @ApiOperation({ summary: 'Get a paginated list of blogs' })
-  @ApiOkResponse({ description: 'Returns a paginated list of blogs', type: PaginatedBlogListSwaggerOutputDTO })
+  @BlogsControllerSwaggerDecorators.getBlogList
   @Get(SETTINGS.GET_BLOG_LIST_PATH)
   @HttpCode(HttpStatus.OK)
   public async getBlogList(
@@ -122,13 +88,7 @@ export class BlogsController {
   }
 
   /*005. GET-запрос по поиску постов с пагинацией по ID блога, используя query-параметры.*/
-  @ApiOperation({
-    summary: 'Get a paginated list of posts by blog ID. Bearer auth is optional to get personalized like statuses',
-  })
-  @ApiOkResponse({ type: PaginatedPostListSwaggerOutputDTO, description: 'Returns a paginated list of posts' })
-  @ApiNotFoundResponse({ description: 'The blog does not exist', type: ErrorsMessagesSwaggerType })
-  @ApiBearerAuth()
-  @ApiParam({ name: 'blogId', description: 'Blog ID', format: 'ObjectId' })
+  @BlogsControllerSwaggerDecorators.getPostListByBlogId
   @UseGuards(OptionalAccessJwtAuthGuard)
   @Get(SETTINGS.GET_POST_LIST_BY_BLOG_ID_PATH)
   @HttpCode(HttpStatus.OK)
@@ -142,16 +102,7 @@ export class BlogsController {
   }
 
   /*006. PUT-запрос по изменению блога по ID, используя URI-параметры.*/
-  @ApiOperation({ summary: 'Update a blog by ID' })
-  @ApiNoContentResponse({ description: 'Updates the blog' })
-  @ApiBadRequestResponse({ description: 'The input data is invalid', type: ErrorsMessagesSwaggerType })
-  @ApiNotFoundResponse({ description: 'The blog does not exist', type: ErrorsMessagesSwaggerType })
-  @ApiUnauthorizedResponse({
-    description: 'Wrong authorization type or the basic auth credentials are incorrect',
-    type: ErrorsMessagesSwaggerType,
-  })
-  @ApiBasicAuth()
-  @ApiParam({ name: 'id', description: 'Blog ID', format: 'ObjectId' })
+  @BlogsControllerSwaggerDecorators.updateBlogById
   @UseGuards(BasicAuthGuard)
   @Put(SETTINGS.UPDATE_BLOG_BY_ID_PATH)
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -161,15 +112,7 @@ export class BlogsController {
   }
 
   /*007. DELETE-запрос по удалению блога по ID, используя URI-параметры.*/
-  @ApiOperation({ summary: 'Delete a blog by ID' })
-  @ApiNoContentResponse({ description: 'Deletes the blog' })
-  @ApiNotFoundResponse({ description: 'The blog does not exist', type: ErrorsMessagesSwaggerType })
-  @ApiUnauthorizedResponse({
-    description: 'Wrong authorization type or the basic auth credentials are incorrect',
-    type: ErrorsMessagesSwaggerType,
-  })
-  @ApiBasicAuth()
-  @ApiParam({ name: 'id', description: 'Blog ID', format: 'ObjectId' })
+  @BlogsControllerSwaggerDecorators.deleteBlogById
   @UseGuards(BasicAuthGuard)
   @Delete(SETTINGS.DELETE_BLOG_BY_ID_PATH)
   @HttpCode(HttpStatus.NO_CONTENT)

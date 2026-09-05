@@ -1,6 +1,7 @@
 import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { AppService } from './app.service';
+import { AppControllerSwaggerDecorators } from './core/swagger/decorators/app-module/app-controller.swagger-decorators';
 
 /*Необязательный контроллер для модуля "AppModule".*/
 @ApiTags('App')
@@ -8,8 +9,7 @@ import { AppService } from './app.service';
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @ApiOperation({ summary: 'Greet the World!' })
-  @ApiOkResponse({ description: 'The world has been greeted!' })
+  @AppControllerSwaggerDecorators.hello
   @Get()
   @HttpCode(HttpStatus.OK)
   public hello(): string {

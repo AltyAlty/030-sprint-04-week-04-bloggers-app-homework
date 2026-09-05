@@ -1,20 +1,9 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Res, UseGuards } from '@nestjs/common';
-import {
-  ApiBadRequestResponse,
-  ApiBearerAuth,
-  ApiCookieAuth,
-  ApiNoContentResponse,
-  ApiOkResponse,
-  ApiOperation,
-  ApiTags,
-  ApiTooManyRequestsResponse,
-  ApiUnauthorizedResponse,
-} from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { AuthService } from '../../application/auth/auth.service';
 import { UsersService } from '../../application/users/users.service';
 import { AuthQueryService } from '../../application/auth/auth.query-service';
-import { ErrorsMessagesSwaggerType } from '../../../../core/validation/types/errors-messages.type';
 import { AuthUserByLoginOrEmailInputDTO } from './input-dto/auth-user-by-login-or-email.input-dto';
 import { ConfirmUserByCodeInputDTO } from './input-dto/confirm-user-by-code.input-dto';
 import { RegisterUserInputDTO } from './input-dto/register-user.input-dto';
@@ -32,6 +21,7 @@ import { UserRefreshJwtAuthContextDTO } from '../../../../core/guards/refresh-jw
 import { RefreshJwtAuthGuard } from '../../../../core/guards/refresh-jwt-auth/refresh-jwt-auth.guard';
 import { RequestRateLimitingGuard } from '../../../../core/guards/request-rate-limiting/request-rate-limiting.guard';
 import { SETTINGS } from '../../../../core/settings/settings';
+import { AuthControllerSwaggerDecorators } from '../../../../core/swagger/decorators/user-module/auth-controller.swagger-decorators';
 import { UserAgentAndIpDTO } from './decorators/param-extraction/dto/user-agent-and-ip.dto';
 import { ExtractIpAndUserAgentFromRequest } from './decorators/param-extraction/extract-ip-and-user-agent-from-request.param-decorator';
 import { ExtractUserDataFromRequest } from './decorators/param-extraction/extract-user-data-from-request.param-decorator';
@@ -47,15 +37,7 @@ export class AuthController {
   ) {}
 
   /*001. POST-запрос по регистрации пользователя.*/
-  @ApiOperation({ summary: 'Register a user' })
-  @ApiNoContentResponse({
-    description: 'Creates a user account and sends an email with a code to complete the registration',
-  })
-  @ApiBadRequestResponse({
-    description: 'The input data is invalid or the user already exists',
-    type: ErrorsMessagesSwaggerType,
-  })
-  @ApiTooManyRequestsResponse({ description: 'Too many requests. Not more than 5 requests per 10 seconds' })
+  @AuthControllerSwaggerDecorators.registerUser
   @UseGuards(RequestRateLimitingGuard)
   @Post(SETTINGS.REGISTER_USER_PATH)
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -65,13 +47,7 @@ export class AuthController {
   }
 
   /*002. POST-запрос по повторной отправке письма для подтверждения регистрации пользователя.*/
-  @ApiOperation({ summary: 'Resend a registration confirmation email' })
-  @ApiNoContentResponse({ description: 'Resends an email with a code to complete the registration' })
-  @ApiBadRequestResponse({
-    description: 'The email is invalid, the user has never registered or the user is already registered',
-    type: ErrorsMessagesSwaggerType,
-  })
-  @ApiTooManyRequestsResponse({ description: 'Too many requests. Not more than 5 requests per 10 seconds' })
+  @AuthControllerSwaggerDecorators.resendConfirmationEmail
   @UseGuards(RequestRateLimitingGuard)
   @Post(SETTINGS.RESEND_CONFIRMATION_EMAIL_PATH)
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -81,14 +57,7 @@ export class AuthController {
   }
 
   /*003. POST-запрос по подтверждению регистрации пользователя по коду подтверждения регистрации пользователя.*/
-  @ApiOperation({ summary: 'Confirm a user registration by confirmation code' })
-  @ApiNoContentResponse({ description: 'Confirms the user registration' })
-  @ApiBadRequestResponse({
-    description:
-      'The confirmation code is invalid or expired, the user has never registered or the user is already registered',
-    type: ErrorsMessagesSwaggerType,
-  })
-  @ApiTooManyRequestsResponse({ description: 'Too many requests. Not more than 5 requests per 10 seconds' })
+  @AuthControllerSwaggerDecorators.confirmUserByCode
   @UseGuards(RequestRateLimitingGuard)
   @Post(SETTINGS.CONFIRM_USER_BY_CODE_PATH)
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -99,13 +68,7 @@ export class AuthController {
   }
 
   /*004. POST-запрос по отправке письма с кодом восстановления пароля пользователя.*/
-  @ApiOperation({ summary: 'Send a password recovery code' })
-  @ApiNoContentResponse({
-    description:
-      'Sends an email with a password recovery code (even if the user is not registered to prevent email detection)',
-  })
-  @ApiBadRequestResponse({ description: 'The email is invalid', type: ErrorsMessagesSwaggerType })
-  @ApiTooManyRequestsResponse({ description: 'Too many requests. Not more than 5 requests per 10 seconds' })
+  @AuthControllerSwaggerDecorators.sendPasswordRecoveryCode
   @UseGuards(RequestRateLimitingGuard)
   @Post(SETTINGS.SEND_PASSWORD_RECOVERY_CODE_PATH)
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -115,13 +78,7 @@ export class AuthController {
   }
 
   /*005. POST-запрос по установлению нового пароля пользователя по коду восстановления пароля пользователя.*/
-  @ApiOperation({ summary: 'Set a new password by password recovery code' })
-  @ApiNoContentResponse({ description: `Updates the user's password` })
-  @ApiBadRequestResponse({
-    description: 'The password recovery code is invalid or expired, the password is invalid or the user does not exist',
-    type: ErrorsMessagesSwaggerType,
-  })
-  @ApiTooManyRequestsResponse({ description: 'Too many requests. Not more than 5 requests per 10 seconds' })
+  @AuthControllerSwaggerDecorators.setNewPasswordByPasswordRecoveryCode
   @UseGuards(RequestRateLimitingGuard)
   @Post(SETTINGS.SET_NEW_PASSWORD_BY_PASSWORD_RECOVERY_CODE_PATH)
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -133,18 +90,7 @@ export class AuthController {
   }
 
   /*006. POST-запрос по аутентификации пользователя по логину или email и паролю.*/
-  @ApiOperation({ summary: 'Log in a user by login or email' })
-  @ApiOkResponse({
-    description: 'Sends Access (through body) and Refresh (through cookies) JWTs',
-    type: AuthUserByLoginOrEmailOutputDTO,
-  })
-  @ApiBadRequestResponse({ description: 'The auth credentials are invalid', type: ErrorsMessagesSwaggerType })
-  @ApiUnauthorizedResponse({
-    description: 'The auth credentials are incorrect',
-    type: ErrorsMessagesSwaggerType,
-  })
-  @ApiTooManyRequestsResponse({ description: 'Too many requests. Not more than 5 requests per 10 seconds' })
-  /*Подключаем гард для аутентификации по логину и паролю.*/
+  @AuthControllerSwaggerDecorators.authUserByLoginOrEmail
   @UseGuards(RequestRateLimitingGuard, LocalAuthGuard)
   @Post(SETTINGS.AUTH_USER_BY_LOGIN_OR_EMAIL_PATH)
   @HttpCode(HttpStatus.OK)
@@ -166,17 +112,7 @@ export class AuthController {
   }
 
   /*007. POST-запрос по получению новой пары AT и RT.*/
-  @ApiOperation({ summary: 'Get new Access and Refresh JWTs by refresh JWT' })
-  @ApiOkResponse({
-    description: 'Sends new Access (through body) and Refresh (through cookies) JWTs',
-    type: GetNewAccessAndRefreshTokensOutputDTO,
-  })
-  @ApiUnauthorizedResponse({
-    description: 'The refresh JWT is invalid, incorrect or expired',
-    type: ErrorsMessagesSwaggerType,
-  })
-  @ApiCookieAuth('refreshToken')
-  /*Подключаем гард для авторизации по Refresh JWT.*/
+  @AuthControllerSwaggerDecorators.getNewAccessAndRefreshTokens
   @UseGuards(RefreshJwtAuthGuard)
   @Post(SETTINGS.GET_NEW_ACCESS_AND_REFRESH_TOKENS_PATH)
   @HttpCode(HttpStatus.OK)
@@ -197,13 +133,7 @@ export class AuthController {
   }
 
   /*008. POST-запрос по отзыву пользовательской сессии.*/
-  @ApiOperation({ summary: 'Log a user out by Refresh JWT' })
-  @ApiNoContentResponse({ description: 'Logs the user out' })
-  @ApiUnauthorizedResponse({
-    description: 'The refresh JWT is invalid, incorrect or expired',
-    type: ErrorsMessagesSwaggerType,
-  })
-  @ApiCookieAuth('refreshToken')
+  @AuthControllerSwaggerDecorators.revokeSession
   @UseGuards(RefreshJwtAuthGuard)
   @Post(SETTINGS.LOGOUT_PATH)
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -215,17 +145,7 @@ export class AuthController {
   }
 
   /*009. GET-запрос по получению данных пользователя по AT.*/
-  @ApiOperation({ summary: 'Get authenticated user data by Access JWT' })
-  @ApiOkResponse({
-    description: 'Sends authenticated user data',
-    type: GetAuthUserDataByAccessTokenOutputDTO,
-  })
-  @ApiUnauthorizedResponse({
-    description: 'The Access JWT is invalid or the user does not exist',
-    type: ErrorsMessagesSwaggerType,
-  })
-  @ApiBearerAuth()
-  /*Подключаем гард для авторизации по Access JWT.*/
+  @AuthControllerSwaggerDecorators.getAuthUserDataByAccessToken
   @UseGuards(AccessJwtAuthGuard)
   @Get(SETTINGS.GET_USER_DATA_BY_ACCESS_TOKEN_PATH)
   @HttpCode(HttpStatus.OK)
