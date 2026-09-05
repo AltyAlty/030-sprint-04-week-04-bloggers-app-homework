@@ -31,16 +31,10 @@ export class BlogsService {
     return BlogOutputDTO.mapFromBlogDocumentTypeToBlogOutputDTO(blog);
   }
 
-  /*Метод для поиска блога по ID без выброса исключений.*/
-  public async findByIdWithoutExceptions(id: string): Promise<BlogDocumentType | null> {
-    /*Просим репозиторий "BlogsRepository" найти блог по ID в БД.*/
-    return this.blogsRepository.findById(id);
-  }
-
   /*Метод для изменения блога по ID.*/
   public async updateById(id: string, dto: UpdateBlogDTO): Promise<void> {
-    /*Просим сервис "BlogsService" найти блог по ID без выброса исключений.*/
-    const blog: BlogDocumentType | null = await this.findByIdWithoutExceptions(id);
+    /*Просим репозиторий "BlogsRepository" найти блог по ID в БД.*/
+    const blog: BlogDocumentType | null = await this.blogsRepository.findById(id);
 
     /*Если блог не был найден, то выбрасываем исключение с информацией об этом.*/
     if (!blog)
@@ -58,8 +52,8 @@ export class BlogsService {
 
   /*Метод для soft удаления блога по ID.*/
   public async markAsDeletedById(id: string): Promise<void> {
-    /*Просим сервис "BlogsService" найти блог по ID без выброса исключений.*/
-    const blog: BlogDocumentType | null = await this.findByIdWithoutExceptions(id);
+    /*Просим репозиторий "BlogsRepository" найти блог по ID в БД.*/
+    const blog: BlogDocumentType | null = await this.blogsRepository.findById(id);
 
     /*Если блог не был найден, то выбрасываем исключение с информацией об этом.*/
     if (!blog)
@@ -77,8 +71,8 @@ export class BlogsService {
 
   /*Метод для hard удаления блога по ID.*/
   public async deleteById(id: string): Promise<void> {
-    /*Просим сервис "BlogsService" найти блог по ID без выброса исключений.*/
-    const blog: BlogDocumentType | null = await this.findByIdWithoutExceptions(id);
+    /*Просим репозиторий "BlogsRepository" найти блог по ID в БД.*/
+    const blog: BlogDocumentType | null = await this.blogsRepository.findById(id);
 
     /*Если блог не был найден, то выбрасываем исключение с информацией об этом.*/
     if (!blog)

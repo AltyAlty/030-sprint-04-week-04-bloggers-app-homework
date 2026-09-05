@@ -2,8 +2,7 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Post, Res, UseGuards } fro
 import { ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { AuthService } from '../../application/auth/auth.service';
-import { UsersService } from '../../application/users/users.service';
-import { AuthQueryService } from '../../application/auth/auth.query-service';
+import { UsersQueryService } from '../../application/users/users.query-service';
 import { AuthUserByLoginOrEmailInputDTO } from './input-dto/auth-user-by-login-or-email.input-dto';
 import { ConfirmUserByCodeInputDTO } from './input-dto/confirm-user-by-code.input-dto';
 import { RegisterUserInputDTO } from './input-dto/register-user.input-dto';
@@ -11,7 +10,7 @@ import { ResendConfirmationEmailInputDTO } from './input-dto/resend-confirmation
 import { SendPasswordRecoveryCodeInputDTO } from './input-dto/send-password-recovery-code.input-dto';
 import { SetNewPasswordByPasswordRecoveryCodeInputDTO } from './input-dto/set-new-password-by-password-recovery-code.input-dto';
 import { AuthUserByLoginOrEmailOutputDTO } from './output-dto/auth-user-by-login-or-email.output-dto';
-import { GetAuthUserDataByAccessTokenOutputDTO } from './output-dto/get-auth-user-data-by-access-token.output-dto';
+import { AuthUserDataOutputDTO } from './output-dto/auth-user-data.output-dto';
 import { GetNewAccessAndRefreshTokensOutputDTO } from './output-dto/get-new-access-and-refresh-tokens.output-dto';
 import { AccessJwtAuthGuard } from '../../../../core/guards/access-jwt-auth/access-jwt-auth.guard';
 import { UserAccessJwtAuthContextDTO } from '../../../../core/guards/access-jwt-auth/dto/user-access-jwt-auth-context.dto';
@@ -32,8 +31,7 @@ import { ExtractUserDataFromRequest } from './decorators/param-extraction/extrac
 export class AuthController {
   public constructor(
     private readonly authService: AuthService,
-    private readonly usersService: UsersService,
-    private readonly authQueryService: AuthQueryService
+    private readonly usersQueryService: UsersQueryService
   ) {}
 
   /*001. POST-запрос по регистрации пользователя.*/
@@ -62,9 +60,9 @@ export class AuthController {
   @Post(SETTINGS.CONFIRM_USER_BY_CODE_PATH)
   @HttpCode(HttpStatus.NO_CONTENT)
   public async confirmUserByCode(@Body() body: ConfirmUserByCodeInputDTO): Promise<void> {
-    /*Просим сервис "UsersService" подтвердить регистрацию пользователя по коду подтверждения регистрации
+    /*Просим сервис "AuthService" подтвердить регистрацию пользователя по коду подтверждения регистрации
     пользователя.*/
-    await this.usersService.confirmByCode(body);
+    await this.authService.confirmByCode(body);
   }
 
   /*004. POST-запрос по отправке письма с кодом восстановления пароля пользователя.*/
@@ -85,8 +83,8 @@ export class AuthController {
   public async setNewPasswordByPasswordRecoveryCode(
     @Body() body: SetNewPasswordByPasswordRecoveryCodeInputDTO
   ): Promise<void> {
-    /*Просим сервис "UsersService" установить новый пароль пользователя по коду восстановления пароля пользователя.*/
-    await this.usersService.updatePasswordByPasswordRecoveryCode(body);
+    /*Просим сервис "AuthService" установить новый пароль пользователя по коду восстановления пароля пользователя.*/
+    await this.authService.updatePasswordByPasswordRecoveryCode(body);
   }
 
   /*006. POST-запрос по аутентификации пользователя по логину или email и паролю.*/
@@ -151,8 +149,8 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   public async getAuthUserDataByAccessToken(
     @ExtractUserDataFromRequest() userAccessJwtAuthContext: UserAccessJwtAuthContextDTO
-  ): Promise<GetAuthUserDataByAccessTokenOutputDTO> {
-    /*Просим сервис "AuthQueryService" найти данные о пользователе по ID пользователя при предоставлении AT.*/
-    return this.authQueryService.getAuthUserDataByUserId(userAccessJwtAuthContext);
+  ): Promise<AuthUserDataOutputDTO> {
+    /*Просим сервис "UsersQueryService" найти данные о пользователе по ID пользователя при предоставлении AT.*/
+    return this.usersQueryService.getAuthUserDataByUserId(userAccessJwtAuthContext.id);
   }
 }

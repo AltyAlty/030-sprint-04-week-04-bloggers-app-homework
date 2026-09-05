@@ -6,9 +6,7 @@ import { AuthController } from './api/auth/auth.controller';
 import { SecurityDevicesController } from './api/security-devices/security-devices.controller';
 import { UsersController } from './api/users/users.controller';
 import { AuthService } from './application/auth/auth.service';
-import { SecurityDevicesService } from './application/security-devices/security-devices.service';
 import { UsersService } from './application/users/users.service';
-import { AuthQueryService } from './application/auth/auth.query-service';
 import { SecurityDevicesQueryService } from './application/security-devices/security-devices.query-service';
 import { UsersQueryService } from './application/users/users.query-service';
 import { AuthRepository } from './infrastructure/auth/auth.repository';
@@ -87,9 +85,7 @@ import { User, UserSchema } from './domain/users/user.entity';
     RefreshJwtAuthStrategy,
     JwtService,
     AuthService,
-    SecurityDevicesService,
     UsersService,
-    AuthQueryService,
     SecurityDevicesQueryService,
     UsersQueryService,
     AuthRepository,

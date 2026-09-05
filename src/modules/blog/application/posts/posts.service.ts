@@ -75,16 +75,10 @@ export class PostsService {
     return PostOutputDTO.mapFromPostDocumentTypeToPostOutputDTO(post, PostLikeStatusOutputDTO.None, []);
   }
 
-  /*Метод для поиска поста по ID без выброса исключений.*/
-  public async findByIdWithoutExceptions(id: string): Promise<PostDocumentType | null> {
-    /*Просим репозиторий "PostsRepository" найти пост по ID в БД.*/
-    return this.postsRepository.findById(id);
-  }
-
   /*Метод для изменения поста по ID.*/
   public async updateById(id: string, dto: UpdatePostDTO): Promise<void> {
-    /*Просим сервис "PostsService" найти пост по ID в БД.*/
-    const post: PostDocumentType | null = await this.findByIdWithoutExceptions(id);
+    /*Просим репозиторий "PostsRepository" найти пост по ID в БД.*/
+    const post: PostDocumentType | null = await this.postsRepository.findById(id);
 
     /*Если пост не был найден, то выбрасываем исключение с информацией об этом.*/
     if (!post)
@@ -216,8 +210,8 @@ export class PostsService {
 
   /*Метод для soft удаления поста по ID.*/
   public async markAsDeletedById(id: string): Promise<void> {
-    /*Просим сервис "PostsService" найти пост по ID в БД.*/
-    const post: PostDocumentType | null = await this.findByIdWithoutExceptions(id);
+    /*Просим репозиторий "PostsRepository" найти пост по ID в БД.*/
+    const post: PostDocumentType | null = await this.postsRepository.findById(id);
 
     /*Если пост не был найден, то выбрасываем исключение с информацией об этом.*/
     if (!post)
@@ -235,8 +229,8 @@ export class PostsService {
 
   /*Метод для hard удаления поста по ID.*/
   public async deleteById(id: string): Promise<void> {
-    /*Просим сервис "PostsService" найти пост по ID в БД.*/
-    const post: PostDocumentType | null = await this.findByIdWithoutExceptions(id);
+    /*Просим репозиторий "PostsRepository" найти пост по ID в БД.*/
+    const post: PostDocumentType | null = await this.postsRepository.findById(id);
 
     /*Если пост не был найден, то выбрасываем исключение с информацией об этом.*/
     if (!post)

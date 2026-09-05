@@ -11,7 +11,7 @@ import {
 } from '@nestjs/swagger';
 import { ErrorsMessagesSwaggerType } from '../../../validation/types/errors-messages.type';
 import { AuthUserByLoginOrEmailOutputDTO } from '../../../../modules/user/api/auth/output-dto/auth-user-by-login-or-email.output-dto';
-import { GetAuthUserDataByAccessTokenOutputDTO } from '../../../../modules/user/api/auth/output-dto/get-auth-user-data-by-access-token.output-dto';
+import { AuthUserDataOutputDTO } from '../../../../modules/user/api/auth/output-dto/auth-user-data.output-dto';
 import { GetNewAccessAndRefreshTokensOutputDTO } from '../../../../modules/user/api/auth/output-dto/get-new-access-and-refresh-tokens.output-dto';
 
 export const AuthControllerSwaggerDecorators = {
@@ -127,7 +127,7 @@ export const AuthControllerSwaggerDecorators = {
       ApiOperation({ summary: 'Get authenticated user data by Access JWT' }),
       ApiOkResponse({
         description: 'Sends authenticated user data',
-        type: GetAuthUserDataByAccessTokenOutputDTO,
+        type: AuthUserDataOutputDTO,
       }),
       ApiUnauthorizedResponse({
         description: 'The Access JWT is invalid or the user does not exist',

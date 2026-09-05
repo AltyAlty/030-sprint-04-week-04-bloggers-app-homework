@@ -60,20 +60,14 @@ export class CommentsService {
     return CommentOutputDTO.mapFromCommentDocumentTypeToCommentOutputDTO(comment, CommentLikeStatusOutputDTO.None);
   }
 
-  /*Метод для поиска комментария по ID без выброса исключений.*/
-  public async findByIdWithoutExceptions(id: string): Promise<CommentDocumentType | null> {
-    /*Просим репозиторий "PostsRepository" найти пост по ID в БД.*/
-    return this.commentsRepository.findById(id);
-  }
-
   /*Метод для изменения комментария по ID.*/
   public async updateById(
     id: string,
     dto: UpdateCommentDTO,
     userAccessJwtAuthContext: UserAccessJwtAuthContextDTO
   ): Promise<void> {
-    /*Просим сервис "PostsService" найти комментарий по ID в БД.*/
-    const comment: CommentDocumentType | null = await this.findByIdWithoutExceptions(id);
+    /*Просим репозиторий "CommentsRepository" найти комментарий по ID в БД.*/
+    const comment: CommentDocumentType | null = await this.commentsRepository.findById(id);
 
     /*Если комментарий не был найден, то выбрасываем исключение с информацией об этом.*/
     if (!comment)
@@ -210,8 +204,8 @@ export class CommentsService {
 
   /*Метод для soft удаления комментария по ID.*/
   public async markAsDeletedById(id: string): Promise<void> {
-    /*Просим сервис "CommentsService" найти комментарий по ID в БД.*/
-    const comment: CommentDocumentType | null = await this.findByIdWithoutExceptions(id);
+    /*Просим репозиторий "CommentsRepository" найти комментарий по ID в БД.*/
+    const comment: CommentDocumentType | null = await this.commentsRepository.findById(id);
 
     /*Если комментарий не был найден, то выбрасываем исключение с информацией об этом.*/
     if (!comment)
@@ -229,8 +223,8 @@ export class CommentsService {
 
   /*Метод для hard удаления комментария по ID.*/
   public async deleteById(id: string, userAccessJwtAuthContext: UserAccessJwtAuthContextDTO): Promise<void> {
-    /*Просим сервис "CommentsService" найти комментарий по ID в БД.*/
-    const comment: CommentDocumentType | null = await this.findByIdWithoutExceptions(id);
+    /*Просим репозиторий "CommentsRepository" найти комментарий по ID в БД.*/
+    const comment: CommentDocumentType | null = await this.commentsRepository.findById(id);
 
     /*Если комментарий не был найден, то выбрасываем исключение с информацией об этом.*/
     if (!comment)
