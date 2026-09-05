@@ -31,6 +31,8 @@ export class DomainExceptionFilter implements ExceptionFilter {
       case DomainExceptionCode.NoUserDataToExtractInRequest:
         return HttpStatus.UNAUTHORIZED;
 
+      case DomainExceptionCode.NoUserAgentInRequest:
+      case DomainExceptionCode.NoIpInRequestObject:
       case DomainExceptionCode.SessionAlreadyMarkedAsDeleted:
       case DomainExceptionCode.SecurityDeviceAlreadyMarkedAsDeleted:
       case DomainExceptionCode.InvalidUserRegistrationConfirmationCode:

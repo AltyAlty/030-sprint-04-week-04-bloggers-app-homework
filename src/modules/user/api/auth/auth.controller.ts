@@ -14,6 +14,7 @@ import { AuthUserDataOutputDTO } from './output-dto/auth-user-data.output-dto';
 import { GetNewAccessAndRefreshTokensOutputDTO } from './output-dto/get-new-access-and-refresh-tokens.output-dto';
 import { AccessJwtAuthGuard } from '../../../../core/guards/access-jwt-auth/access-jwt-auth.guard';
 import { UserAccessJwtAuthContextDTO } from '../../../../core/guards/access-jwt-auth/dto/user-access-jwt-auth-context.dto';
+import { IpAndUserAgentGuard } from '../../../../core/guards/ip-and-user-agent/ip-and-user-agent.guard';
 import { UserLocalAuthContextDTO } from '../../../../core/guards/local-auth/dto/user-local-auth-context.dto';
 import { LocalAuthGuard } from '../../../../core/guards/local-auth/local-auth.guard';
 import { UserRefreshJwtAuthContextDTO } from '../../../../core/guards/refresh-jwt-auth/dto/user-refresh-jwt-auth-context.dto';
@@ -89,7 +90,7 @@ export class AuthController {
 
   /*006. POST-запрос по аутентификации пользователя по логину или email и паролю.*/
   @AuthControllerSwaggerDecorators.authUserByLoginOrEmail
-  @UseGuards(RequestRateLimitingGuard, LocalAuthGuard)
+  @UseGuards(IpAndUserAgentGuard, RequestRateLimitingGuard, LocalAuthGuard)
   @Post(SETTINGS.AUTH_USER_BY_LOGIN_OR_EMAIL_PATH)
   @HttpCode(HttpStatus.OK)
   public async authUserByLoginOrEmail(
@@ -111,7 +112,7 @@ export class AuthController {
 
   /*007. POST-запрос по получению новой пары AT и RT.*/
   @AuthControllerSwaggerDecorators.getNewAccessAndRefreshTokens
-  @UseGuards(RefreshJwtAuthGuard)
+  @UseGuards(IpAndUserAgentGuard, RefreshJwtAuthGuard)
   @Post(SETTINGS.GET_NEW_ACCESS_AND_REFRESH_TOKENS_PATH)
   @HttpCode(HttpStatus.OK)
   public async getNewAccessAndRefreshTokens(
