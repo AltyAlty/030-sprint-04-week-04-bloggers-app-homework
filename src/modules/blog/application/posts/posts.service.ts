@@ -112,6 +112,9 @@ export class PostsService {
       });
     }
 
+    /*Получаем ID блога, в котором находиться пост.*/
+    const blogId: string = post.blogId;
+
     /*Если пост был найден, то просим репозиторий "PostsRepository" найти данные о лайке для поста по ID поста и ID
     пользователя в БД.*/
     const postLikeData: PostLikeDataDocumentType | null = await this.postsRepository.findPostLikeDataByPostIdAndUserId(
@@ -149,6 +152,7 @@ export class PostsService {
         /*Просим модель "PostLikeDataModel" создать данные о лайке поста в БД.*/
         const postLikeData: PostLikeDataDocumentType = this.postLikeDataModel.createInstance({
           postId: id,
+          blogId,
           userId: userAccessJwtAuthContext.id,
           login: userAccessJwtAuthContext.login,
           likeStatus: dto.likeStatus as unknown as PostLikeStatusDomainDTO,
@@ -180,6 +184,7 @@ export class PostsService {
         /*Просим модель "PostLikeDataModel" создать данные о лайке поста в БД.*/
         const postLikeData: PostLikeDataDocumentType = this.postLikeDataModel.createInstance({
           postId: id,
+          blogId,
           userId: userAccessJwtAuthContext.id,
           login: userAccessJwtAuthContext.login,
           likeStatus: dto.likeStatus as unknown as PostLikeStatusDomainDTO,
@@ -240,24 +245,20 @@ export class PostsService {
         field: 'id',
       });
 
-    /*Если пост был найден, то просим репозиторий "PostsRepository" удалить пост по ID в БД.*/
-    await this.postsRepository.deleteById(id);
-    /*Просим сервис "CommentsService" удалить комментарии по ID поста.*/
+    /*Если пост был найден, то просим сервис "CommentsService" удалить комментарии по ID поста.*/
     await this.commentsService.deleteAllByPostId(id);
+    /*Просим репозиторий "PostsRepository" удалить данные о лайках поста по ID поста в БД.*/
+    await this.postsRepository.deleteAllPostLikeDataByPostId(id);
+    /*Просим репозиторий "PostsRepository" удалить пост по ID в БД.*/
+    await this.postsRepository.deleteById(id);
   }
 
   /*Метод для hard удаления постов по ID блога.*/
   public async deleteAllByBlogId(id: string): Promise<void> {
-    /*Просим репозиторий "PostsRepository" найти посты по ID блога в БД.*/
-    const posts: PostDocumentType[] = await this.postsRepository.findAllByBlogId(id);
-
-    /*Если посты были найдены, то получаем массив ID постов внутри блога и просим сервис "CommentsService" удалить
-    комментарии по ID постов.*/
-    if (posts.length > 0) {
-      const postIds: string[] = posts.map(post => post._id.toString());
-      await this.commentsService.deleteAllByPostIds(postIds);
-    }
-
+    /*Просим репозиторий "CommentsService" удалить комментарии по ID блога.*/
+    await this.commentsService.deleteAllByBlogId(id);
+    /*Просим репозиторий "PostsRepository" удалить данные о лайках постов по ID блога в БД.*/
+    await this.postsRepository.deleteAllPostLikeDataByBlogId(id);
     /*Просим репозиторий "PostsRepository" удалить посты по ID блога в БД.*/
     await this.postsRepository.deleteAllByBlogId(id);
   }

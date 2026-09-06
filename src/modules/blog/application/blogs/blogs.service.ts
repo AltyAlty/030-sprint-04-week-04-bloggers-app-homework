@@ -82,9 +82,9 @@ export class BlogsService {
         field: 'id',
       });
 
-    /*Если блог был найден, то просим репозиторий "BlogsRepository" удалить блог по ID в БД.*/
-    await this.blogsRepository.deleteById(id);
     /*Просим сервис "PostsService" удалить посты по ID блога.*/
     await this.postsService.deleteAllByBlogId(id);
+    /*Если блог был найден, то просим репозиторий "BlogsRepository" удалить блог по ID в БД.*/
+    await this.blogsRepository.deleteById(id);
   }
 }

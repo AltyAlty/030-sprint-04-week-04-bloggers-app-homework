@@ -52,10 +52,10 @@ export class CommentsRepository {
     await this.commentModel.deleteMany({ postId: id });
   }
 
-  /*Метод для hard удаления комментариев по ID постов в БД.*/
-  public async deleteAllByPostIds(ids: string[]): Promise<void> {
-    /*Просим модель "CommentModel" удалить комментарии по ID постов в БД.*/
-    await this.commentModel.deleteMany({ postId: { $in: ids } });
+  /*Метод для hard удаления комментариев по ID блога в БД.*/
+  public async deleteAllByBlogId(id: string): Promise<void> {
+    /*Просим модель "CommentModel" удалить комментарии по ID блога в БД.*/
+    await this.commentModel.deleteMany({ blogId: id });
   }
 
   /*Метод для удаления данных о лайке комментария по ID комментария и ID пользователя в БД.*/
@@ -63,5 +63,23 @@ export class CommentsRepository {
     /*Просим модель "CommentLikeDataModel" удалить данные о лайке комментария по ID комментария и ID пользователя в
     БД.*/
     await this.commentLikeDataModel.deleteOne({ commentId, userId });
+  }
+
+  /*Метод для удаления данных о лайках комментария по ID комментария в БД.*/
+  public async deleteAllCommentLikeDataByCommentId(id: string): Promise<void> {
+    /*Просим модель "CommentLikeDataModel" удалить данные о лайках комментария по ID комментария в БД.*/
+    await this.commentLikeDataModel.deleteMany({ commentId: id });
+  }
+
+  /*Метод для удаления данных о лайках комментария по ID поста в БД.*/
+  public async deleteAllCommentLikeDataByPostId(id: string): Promise<void> {
+    /*Просим модель "CommentLikeDataModel" удалить данные о лайках комментария по ID поста в БД.*/
+    await this.commentLikeDataModel.deleteMany({ postId: id });
+  }
+
+  /*Метод для удаления данных о лайках комментария по ID блога в БД.*/
+  public async deleteAllCommentLikeDataByBlogId(id: string): Promise<void> {
+    /*Просим модель "CommentLikeDataModel" удалить данные о лайках комментария по ID блога в БД.*/
+    await this.commentLikeDataModel.deleteMany({ blogId: id });
   }
 }

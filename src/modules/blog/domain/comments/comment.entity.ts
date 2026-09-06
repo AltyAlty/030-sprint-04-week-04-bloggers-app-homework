@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { DomainException, DomainExceptionCode } from '../../../../core/exceptions/domain/domain.exception';
+import { BLOG_VALIDATION_CONSTRAINTS } from '../../../../core/validation/constraints/blog.validation-constraints';
 import { COMMENT_VALIDATION_CONSTRAINTS } from '../../../../core/validation/constraints/comment.validation-constraints';
 import { POST_VALIDATION_CONSTRAINTS } from '../../../../core/validation/constraints/post.validation-constraints';
 import { CommentDocumentType } from './document-types/comment.document-type';
@@ -30,6 +31,15 @@ export class Comment {
   })
   public postId: string;
 
+  @Prop({
+    type: String,
+    required: true,
+    trim: true,
+    minlength: BLOG_VALIDATION_CONSTRAINTS.ID.MIN_LENGTH,
+    maxlength: BLOG_VALIDATION_CONSTRAINTS.ID.MAX_LENGTH,
+  })
+  public blogId: string;
+
   @Prop({ type: CommentatorInfoSchema })
   public commentatorInfo: CommentatorInfo;
 
@@ -52,6 +62,7 @@ export class Comment {
     const comment = new this();
     comment.content = dto.content;
     comment.postId = dto.postId;
+    comment.blogId = dto.blogId;
     comment.commentatorInfo = dto.commentatorInfo;
     comment.likesInfo = { likesCount: 0, dislikesCount: 0 };
     return comment as CommentDocumentType;

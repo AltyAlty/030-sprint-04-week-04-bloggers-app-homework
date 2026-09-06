@@ -1,5 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { BLOG_VALIDATION_CONSTRAINTS } from '../../../../core/validation/constraints/blog.validation-constraints';
 import { COMMENT_VALIDATION_CONSTRAINTS } from '../../../../core/validation/constraints/comment.validation-constraints';
+import { POST_VALIDATION_CONSTRAINTS } from '../../../../core/validation/constraints/post.validation-constraints';
 import { USER_VALIDATION_CONSTRAINTS } from '../../../../core/validation/constraints/user.validation-constraints';
 import { CommentLikeDataDocumentType } from './document-types/comment-like-data.document-type';
 import { CommentLikeStatusDomainDTO } from './domain-dto/comment-like-status.domain-dto';
@@ -22,6 +24,24 @@ export class CommentLikeData {
     type: String,
     required: true,
     trim: true,
+    minlength: POST_VALIDATION_CONSTRAINTS.ID.MIN_LENGTH,
+    maxlength: POST_VALIDATION_CONSTRAINTS.ID.MAX_LENGTH,
+  })
+  public postId: string;
+
+  @Prop({
+    type: String,
+    required: true,
+    trim: true,
+    minlength: BLOG_VALIDATION_CONSTRAINTS.ID.MIN_LENGTH,
+    maxlength: BLOG_VALIDATION_CONSTRAINTS.ID.MAX_LENGTH,
+  })
+  public blogId: string;
+
+  @Prop({
+    type: String,
+    required: true,
+    trim: true,
     minlength: USER_VALIDATION_CONSTRAINTS.ID.MIN_LENGTH,
     maxlength: USER_VALIDATION_CONSTRAINTS.ID.MAX_LENGTH,
   })
@@ -34,6 +54,8 @@ export class CommentLikeData {
   public static createInstance(dto: CreateCommentLikeDataDomainDTO): CommentLikeDataDocumentType {
     const commentLikeData = new this();
     commentLikeData.commentId = dto.commentId;
+    commentLikeData.postId = dto.postId;
+    commentLikeData.blogId = dto.blogId;
     commentLikeData.userId = dto.userId;
     commentLikeData.likeStatus = dto.likeStatus;
     return commentLikeData as CommentLikeDataDocumentType;

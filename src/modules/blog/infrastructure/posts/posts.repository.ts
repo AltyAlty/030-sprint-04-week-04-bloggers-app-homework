@@ -31,12 +31,6 @@ export class PostsRepository {
     return await this.postModel.findOne({ _id: id, deletedAt: null });
   }
 
-  /*Метод для поиска постов по ID блога в БД.*/
-  public async findAllByBlogId(id: string): Promise<PostDocumentType[]> {
-    /*Просим модель "PostModel" найти посты по ID блога в БД.*/
-    return await this.postModel.find({ blogId: id, deletedAt: null });
-  }
-
   /*Метод для поиска данных о лайке поста по ID поста и ID пользователя в БД.*/
   public async findPostLikeDataByPostIdAndUserId(
     postId: string,
@@ -62,5 +56,17 @@ export class PostsRepository {
   public async deletePostLikeDataByPostIdAndUserId(postId: string, userId: string): Promise<void> {
     /*Просим модель "PostLikeDataModel" удалить данные о лайке поста по ID поста и ID пользователя в БД.*/
     await this.postLikeDataModel.deleteOne({ postId, userId });
+  }
+
+  /*Метод для удаления данных о лайках поста по ID поста в БД.*/
+  public async deleteAllPostLikeDataByPostId(id: string): Promise<void> {
+    /*Просим модель "PostLikeDataModel" удалить данные о лайках поста по ID поста в БД.*/
+    await this.postLikeDataModel.deleteMany({ postId: id });
+  }
+
+  /*Метод для удаления данных о лайках постов по ID блога в БД.*/
+  public async deleteAllPostLikeDataByBlogId(id: string): Promise<void> {
+    /*Просим модель "PostLikeDataModel" удалить данные о лайках постов по ID блога в БД.*/
+    await this.postLikeDataModel.deleteMany({ blogId: id });
   }
 }

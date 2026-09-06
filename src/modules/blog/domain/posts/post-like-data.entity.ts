@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { BLOG_VALIDATION_CONSTRAINTS } from '../../../../core/validation/constraints/blog.validation-constraints';
 import { POST_VALIDATION_CONSTRAINTS } from '../../../../core/validation/constraints/post.validation-constraints';
 import { USER_VALIDATION_CONSTRAINTS } from '../../../../core/validation/constraints/user.validation-constraints';
 import { PostLikeDataDocumentType } from './document-types/post-like-data.document-type';
@@ -17,6 +18,15 @@ export class PostLikeData {
     maxlength: POST_VALIDATION_CONSTRAINTS.ID.MAX_LENGTH,
   })
   public postId: string;
+
+  @Prop({
+    type: String,
+    required: true,
+    trim: true,
+    minlength: BLOG_VALIDATION_CONSTRAINTS.ID.MIN_LENGTH,
+    maxlength: BLOG_VALIDATION_CONSTRAINTS.ID.MAX_LENGTH,
+  })
+  public blogId: string;
 
   @Prop({
     type: String,
@@ -46,6 +56,7 @@ export class PostLikeData {
   public static createInstance(dto: CreatePostLikeDataDomainDTO): PostLikeDataDocumentType {
     const postLikeData = new this();
     postLikeData.postId = dto.postId;
+    postLikeData.blogId = dto.blogId;
     postLikeData.userId = dto.userId;
     postLikeData.login = dto.login;
     postLikeData.likeStatus = dto.likeStatus;

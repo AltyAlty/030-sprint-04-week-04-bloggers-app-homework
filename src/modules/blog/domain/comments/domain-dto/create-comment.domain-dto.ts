@@ -4,5 +4,6 @@ import { CommentatorInfo } from '../schemas/commentator-info.schema';
 export class CreateCommentDomainDTO {
   public content: string;
   public postId: string;
+  public blogId: string;
   public commentatorInfo: CommentatorInfo;
 }

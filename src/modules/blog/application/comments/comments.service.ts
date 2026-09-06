@@ -51,6 +51,7 @@ export class CommentsService {
     const comment: CommentDocumentType = this.commentModel.createInstance({
       ...dto,
       postId,
+      blogId: post.blogId,
       commentatorInfo: { userId: userAccessJwtAuthContext.id, userLogin: userAccessJwtAuthContext.login },
     });
 
@@ -109,6 +110,11 @@ export class CommentsService {
       });
     }
 
+    /*Получаем ID поста, в котором находиться комментарий.*/
+    const postId: string = comment.postId;
+    /*Получаем ID блога, в котором находиться комментарий.*/
+    const blogId: string = comment.blogId;
+
     /*Если комментарий был найден, то просим репозиторий "CommentsRepository" найти данные о лайке для комментария по ID
     комментария и ID пользователя в БД.*/
     const commentLikeData: CommentLikeDataDocumentType | null =
@@ -145,6 +151,8 @@ export class CommentsService {
         /*Просим модель "CommentLikeDataModel" создать данные о лайке комментария в БД.*/
         const commentLikeData: CommentLikeDataDocumentType = this.commentLikeDataModel.createInstance({
           commentId: id,
+          postId,
+          blogId,
           userId: userAccessJwtAuthContext.id,
           likeStatus: dto.likeStatus as unknown as CommentLikeStatusDomainDTO,
         });
@@ -175,6 +183,8 @@ export class CommentsService {
         /*Просим модель "CommentLikeDataModel" создать данные о лайке комментария в БД.*/
         const commentLikeData: CommentLikeDataDocumentType = this.commentLikeDataModel.createInstance({
           commentId: id,
+          postId,
+          blogId,
           userId: userAccessJwtAuthContext.id,
           likeStatus: dto.likeStatus as unknown as CommentLikeStatusDomainDTO,
         });
@@ -243,19 +253,25 @@ export class CommentsService {
       });
 
     /*Если комментарий был найден и пользователь является его владельцем, то просим репозиторий "CommentsRepository"
-    удалить комментарий по ID в БД.*/
+    удалить данные о лайках комментария по ID комментария в БД.*/
+    await this.commentsRepository.deleteAllCommentLikeDataByCommentId(id);
+    /*Просим репозиторий "CommentsRepository" удалить комментарий по ID в БД.*/
     await this.commentsRepository.deleteById(id);
   }
 
   /*Метод для hard удаления комментариев по ID поста.*/
   public async deleteAllByPostId(id: string): Promise<void> {
+    /*Просим репозиторий "CommentsRepository" удалить данные о лайках комментария по ID поста в БД.*/
+    await this.commentsRepository.deleteAllCommentLikeDataByPostId(id);
     /*Просим репозиторий "CommentsRepository" удалить комментарии по ID поста в БД.*/
     await this.commentsRepository.deleteAllByPostId(id);
   }
 
-  /*Метод для hard удаления комментариев по ID постов.*/
-  public async deleteAllByPostIds(ids: string[]): Promise<void> {
-    /*Просим репозиторий "CommentsRepository" удалить комментарии по ID постов в БД.*/
-    await this.commentsRepository.deleteAllByPostIds(ids);
+  /*Метод для hard удаления комментариев по ID блога.*/
+  public async deleteAllByBlogId(id: string): Promise<void> {
+    /*Просим репозиторий "CommentsRepository" удалить данные о лайках комментария по ID блога в БД.*/
+    await this.commentsRepository.deleteAllCommentLikeDataByBlogId(id);
+    /*Просим репозиторий "CommentsRepository" удалить комментарии по ID блога в БД.*/
+    await this.commentsRepository.deleteAllByBlogId(id);
   }
 }
