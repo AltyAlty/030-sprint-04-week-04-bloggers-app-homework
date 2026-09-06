@@ -2,7 +2,7 @@ import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { Request } from 'express';
 import { UserAgentAndIpDTO } from './dto/user-agent-and-ip.dto';
 
-/*Кастомный декоратор для получения из объекта запроса значения заголовка "user-agent" и IP-адреса пользователя.*/
+/*Декоратор для получения из объекта запроса значения заголовка "user-agent" и IP-адреса пользователя.*/
 export const ExtractIpAndUserAgentFromRequest = createParamDecorator(
   (data: unknown, context: ExecutionContext): UserAgentAndIpDTO => {
     /*Получаем объект запроса.*/

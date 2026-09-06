@@ -6,9 +6,9 @@ import { UserSortFieldQueryInputDTO } from '../../../modules/user/api/users/inpu
 import { SortDirectionInputDTO } from '../../pagination/input-dto/sort-direction.input-dto';
 
 /*При использовании декоратора "@ApiPropertyOptional()" из модуля @nestjs/swagger пришлось убрать настройку "enumName",
-из-за которой не выводился раздел "Default value" в Swagger-документации. Но из-за этого внизу Swagger-документации
-пропали Input DTO, касательно полей сортироровки. Чтобы их вернуть создаем этот класс и используем его при настройке
-Swagger-документации.*/
+из-за которой не выводился раздел "Default value" в документации Swagger. Но из-за этого внизу документации Swagger
+пропали Input DTO, касательно полей сортировки. Чтобы их вернуть создаем этот класс и используем его при настройке
+документации Swagger.*/
 export class SwaggerSortEnums {
   @ApiProperty({ enum: SortDirectionInputDTO, enumName: 'SortDirectionInputDTO' })
   public SortDirectionInputDTO: SortDirectionInputDTO;

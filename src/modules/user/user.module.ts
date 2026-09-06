@@ -18,6 +18,8 @@ import { CoreModule } from '../../core/core.module';
 import { AccessJwtAuthStrategy } from '../../core/guards/access-jwt-auth/access-jwt-auth.strategy';
 import { LocalAuthStrategy } from '../../core/guards/local-auth/local-auth.strategy';
 import { RefreshJwtAuthStrategy } from '../../core/guards/refresh-jwt-auth/refresh-jwt-auth.strategy';
+import { Comment, CommentSchema } from '../blog/domain/comments/comment.entity';
+import { CommentLikeData, CommentLikeDataSchema } from '../blog/domain/comments/comment-like-data.entity';
 import { AuthConfig } from './config/auth.config';
 import { AuthConfigModule } from './config/auth-config.module';
 import { EmailConfirmation, EmailConfirmationSchema } from './domain/auth/email-confirmation.entity';
@@ -32,12 +34,16 @@ import { User, UserSchema } from './domain/users/user.entity';
 /*Модуль для пользователей.*/
 @Module({
   imports: [
+    AuthConfigModule,
+    CoreModule,
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: EmailConfirmation.name, schema: EmailConfirmationSchema },
       { name: PasswordRecoveryCodeData.name, schema: PasswordRecoveryCodeDataSchema },
       { name: Session.name, schema: SessionSchema },
       { name: SecurityDevice.name, schema: SecurityDeviceSchema },
+      { name: Comment.name, schema: CommentSchema },
+      { name: CommentLikeData.name, schema: CommentLikeDataSchema },
     ]),
     /*Используем динамический модуль, чтобы можно было использовать класс "AuthConfig" для работы с переменными
     окружения.*/
@@ -73,9 +79,6 @@ import { User, UserSchema } from './domain/users/user.entity';
         },
       },
     ]),
-
-    AuthConfigModule,
-    CoreModule,
     PassportModule.register({ defaultStrategy: 'access-jwt' }),
   ],
   controllers: [AuthController, SecurityDevicesController, UsersController],

@@ -8,7 +8,7 @@ export class ErrorMessageType {
 /*Тип для формата ошибок, возвращаемых клиенту при валидации входных данных.*/
 export type ErrorsMessagesType = ErrorMessageType[];
 
-/*Аналог типа "ErrorMessageType" в виде класса для Swagger-документации.*/
+/*Аналог типа "ErrorMessageType" в виде класса для документации Swagger.*/
 class ErrorMessageSwaggerType {
   @ApiProperty({ example: 'id', description: 'Field that caused error' })
   public field: string;

@@ -7,7 +7,7 @@ import { NotificationModule } from './modules/notification/notification.module';
 /*Переиспользуемый модуль, предоставляющий общий функционал для всего приложения.*/
 @Module({
   imports: [NotificationModule],
-  providers: [Argon2Adapter, BcryptAdapter, CoreConfig],
-  exports: [Argon2Adapter, BcryptAdapter, NotificationModule, CoreConfig],
+  providers: [CoreConfig, Argon2Adapter, BcryptAdapter],
+  exports: [CoreConfig, Argon2Adapter, BcryptAdapter, NotificationModule],
 })
 export class CoreModule {}

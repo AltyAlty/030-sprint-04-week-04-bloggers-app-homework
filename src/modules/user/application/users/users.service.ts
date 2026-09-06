@@ -4,6 +4,10 @@ import { Argon2Adapter } from '../../../../core/security/cryptography/argon2.ada
 import { UsersRepository } from '../../infrastructure/users/users.repository';
 import { UserOutputDTO } from '../../api/users/output-dto/user.output-dto';
 import { DomainException, DomainExceptionCode } from '../../../../core/exceptions/domain/domain.exception';
+import { Comment } from '../../../blog/domain/comments/comment.entity';
+import { CommentLikeData } from '../../../blog/domain/comments/comment-like-data.entity';
+import type { CommentModelType } from '../../../blog/domain/comments/model-types/comment.model-type';
+import type { CommentLikeDataModelType } from '../../../blog/domain/comments/model-types/comment-like-data.model-type';
 import { UserDocumentType } from '../../domain/users/document-types/user.document-type';
 import type { UserModelType } from '../../domain/users/model-types/user.model-type';
 import { User } from '../../domain/users/user.entity';
@@ -15,6 +19,9 @@ export class UsersService {
   public constructor(
     @InjectModel(User.name)
     private readonly userModel: UserModelType,
+    @InjectModel(Comment.name)
+    private readonly commentModel: CommentModelType,
+    @InjectModel(CommentLikeData.name) private readonly commentLikeDataModel: CommentLikeDataModelType,
     private readonly argon2Adapter: Argon2Adapter,
     private readonly usersRepository: UsersRepository
   ) {}
@@ -122,5 +129,9 @@ export class UsersService {
 
     /*Если пользователь был найден, то просим репозиторий "UsersRepository" удалить пользователя по ID в БД.*/
     await this.usersRepository.deleteById(id);
+    /*Просим модель "CommentModel" удалить данные о лайках комментариев по ID пользователя в БД.*/
+    await this.commentLikeDataModel.deleteMany({ userId: id });
+    /*Просим модель "CommentModel" удалить комментарии по ID пользователя в БД.*/
+    await this.commentModel.deleteMany({ 'commentatorInfo.userId': id });
   }
 }

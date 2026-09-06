@@ -57,7 +57,7 @@ export enum DomainExceptionCode {
   CommentAlreadyMarkedAsDeleted = 607,
 }
 
-/*Кастомный класс исключений для доменного слоя.*/
+/*Класс исключений для доменного слоя.*/
 export class DomainException extends Error {
   public readonly code: DomainExceptionCode;
   public readonly message: string;

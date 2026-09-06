@@ -20,7 +20,7 @@ interface SwaggerMethod {
   get(key: 'tags'): SwaggerTagsList | undefined;
 }
 
-/*Функция для генерации Swagger-документации.*/
+/*Функция для генерации документации Swagger.*/
 export function swaggerSetup(app: INestApplication): void {
   /*Получаем экземпляр класса "CoreConfig".*/
   const coreConfig: CoreConfig = app.get<CoreConfig>(CoreConfig);
@@ -59,7 +59,7 @@ export function swaggerSetup(app: INestApplication): void {
   `,
 
     swaggerOptions: {
-      /*Указываем, чтобы контроллеры сортировались в кастомном порядке в Swagger-документации. Для этого настраиваем
+      /*Указываем, чтобы контроллеры сортировались в кастомном порядке в документации Swagger. Для этого настраиваем
       функцию-компаратор. Swagger UI передает в нее два контроллера для сравнения, чтобы определить, какой из них
       выставить выше в списке. Если функция возвращает отрицательное число, то "controllerA" идет раньше "controllerB".
       Если положительное, то "controllerB" идет раньше "controllerA". Если 0, то порядок не меняется.*/
@@ -82,7 +82,7 @@ export function swaggerSetup(app: INestApplication): void {
         метода "localeCompare()".*/
         return controllerNameA.localeCompare(controllerNameB);
       },
-      /*Указываем, чтобы методы контроллеров сортировались по типу в Swagger-документации. Для этого настраиваем
+      /*Указываем, чтобы методы контроллеров сортировались по типу в документации Swagger. Для этого настраиваем
       функцию-компаратор. Swagger UI передает в нее две метода контроллера для сравнения, чтобы определить, какой из них
       выставить выше в списке. Если функция возвращает отрицательное число, то "methodA" идет раньше "methodB". Если
       положительное, то "methodB" идет раньше "methodA". Если 0, то порядок не меняется.*/

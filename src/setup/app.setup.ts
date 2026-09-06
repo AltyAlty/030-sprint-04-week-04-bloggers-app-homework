@@ -12,6 +12,6 @@ export function appSetup(app: INestApplication): void {
   globalPrefixSetup(app);
   /*Получаем экземпляр класса "CoreConfig".*/
   const coreConfig: CoreConfig = app.get<CoreConfig>(CoreConfig);
-  /*Генерируем Swagger-документацию.*/
+  /*Генерируем документацию Swagger.*/
   if (coreConfig.IS_SWAGGER_ENABLED) swaggerSetup(app);
 }

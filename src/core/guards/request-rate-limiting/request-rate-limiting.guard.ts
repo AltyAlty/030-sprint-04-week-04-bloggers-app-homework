@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { DomainException, DomainExceptionCode } from '../../exceptions/domain/domain.exception';
 
-/*Кастомный гард для ограничения частоты запросов.*/
+/*Гард для ограничения частоты запросов.*/
 @Injectable()
 export class RequestRateLimitingGuard extends ThrottlerGuard {
   /*Переопределяем метод получения трекера запросов, чтобы лимиты считались отдельно для связки IP-адреса и эндпоинта, а

@@ -1,6 +1,6 @@
 import { validateSync, ValidationError } from 'class-validator';
 
-/*Методы для конфигураций по работе с переменными окружения.*/
+/*Утилиты для конфигураций по работе с переменными окружения.*/
 export const configValidationUtils = {
   /*Метод для валидации конфигураций по работе с переменными окружения.*/
   validateConfig: (config: object): void => {

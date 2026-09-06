@@ -33,8 +33,8 @@ import { PostLikeData, PostLikeDataSchema } from './domain/posts/post-like-data.
       { name: Comment.name, schema: CommentSchema },
       { name: CommentLikeData.name, schema: CommentLikeDataSchema },
     ]),
-    UserModule,
     PassportModule.register({ defaultStrategy: 'access-jwt' }),
+    UserModule,
   ],
   controllers: [BlogsController, PostsController, CommentsController],
   providers: [
